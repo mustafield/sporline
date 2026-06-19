@@ -1,8 +1,8 @@
 /**
- * Sporline Admin Panel v2.0
+ * Sporline Admin Panel v2.0 - Stabilized Edition
  */
 (function () {
-    const { API } = window.SporlineConfig || {};
+    const { API } = window.SportlineConfig || {};
     let token = localStorage.getItem('sporline_token');
     let currentUser = null;
     let contentData = {};
@@ -16,16 +16,30 @@
     });
 
     const api = async (url, options = {}) => {
-        const res = await fetch(url, { ...options, headers: { ...authHeaders(), ...options.headers } });
-        const data = await res.json();
-        if (res.status === 401) { logout(); throw new Error('Oturum süresi doldu'); }
-        return data;
+        try {
+            const res = await fetch(url, { ...options, headers: { ...authHeaders(), ...options.headers } });
+            
+            if (res.status === 401) { 
+                logout(); 
+                throw new Error('Oturum süresi doldu'); 
+            }
+            
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.error(`API İsteği Başarısız (${url}):`, err);
+            throw err;
+        }
     };
 
     const toast = (msg, type = 'success') => {
         const el = $('#admin-toast');
+        if (!el) {
+            console.log(`Toast Mesajı (HTML Element Eksik): [${type}] ${msg}`);
+            return;
+        }
         el.textContent = msg;
-        el.className = `fixed top-4 right-4 z-[9999] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl transition-all ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`;
+        el.className = `fixed top-4 right-4 z-[9999] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl transition-all ${type === 'success' ? 'bg-emerald-500 text-white' : type === 'info' ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`;
         el.style.opacity = '1';
         setTimeout(() => { el.style.opacity = '0'; }, 3500);
     };
@@ -33,54 +47,75 @@
     const logout = () => {
         token = null;
         localStorage.removeItem('sporline_token');
-        $('#login-screen').classList.remove('hidden');
-        $('#admin-app').classList.add('hidden');
+        $('#login-screen')?.classList.remove('hidden');
+        $('#admin-app')?.classList.add('hidden');
     };
 
     const showApp = () => {
-        $('#login-screen').classList.add('hidden');
-        $('#admin-app').classList.remove('hidden');
+        $('#login-screen')?.classList.add('hidden');
+        $('#admin-app')?.classList.remove('hidden');
     };
 
     // ─── AUTH ───
     const login = async (e) => {
         e.preventDefault();
-        const email = $('#login-email').value;
-        const password = $('#login-password').value;
+        const email = $('#login-email')?.value;
+        const password = $('#login-password')?.value;
+        
+        if (!API || !API.auth) {
+            console.error("HATA: window.SportlineConfig veya API yolları yüklenemedi! config.js dosyasını kontrol et.");
+            toast('Sistem yapılandırma hatası', 'error');
+            return;
+        }
+
         try {
+            console.log("Giriş isteği atılıyor:", `${API.auth}/login`);
             const res = await fetch(`${API.auth}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+
+            console.log("Sunucu yanıt durumu (Status):", res.status);
             const data = await res.json();
+            console.log("Sunucudan dönen veri:", data);
+
             if (data.success) {
                 token = data.data.token;
                 currentUser = data.data.user;
                 localStorage.setItem('sporline_token', token);
-                $('#user-name').textContent = currentUser.name;
+                
+                const userNameEl = $('#user-name');
+                if (userNameEl && currentUser) userNameEl.textContent = currentUser.name;
+                
                 showApp();
                 await initDashboard();
                 toast('Giriş başarılı!');
             } else {
-                toast(data.message, 'error');
+                toast(data.message || 'Giriş başarısız', 'error');
             }
-        } catch {
-            toast('Sunucuya bağlanılamadı', 'error');
+        } catch (error) {
+            console.error("GİRİŞ SÜRECİNDE VEYA PANEL BAŞLATILIRKEN HATA YAKALANDI:", error);
+            toast('Sunucuya bağlanılamadı veya panel başlatılamadı', 'error');
         }
     };
 
     const checkAuth = async () => {
         if (!token) return;
         try {
+            if (!API || !API.auth) return;
             const res = await api(`${API.auth}/me`);
-            if (res.success) {
+            if (res && res.success) {
                 currentUser = res.data;
-                $('#user-name').textContent = currentUser.name;
+                const userNameEl = $('#user-name');
+                if (userNameEl && currentUser) userNameEl.textContent = currentUser.name;
                 showApp();
                 await initDashboard();
             }
-        } catch { logout(); }
+        } catch (err) { 
+            console.error("Oturum kontrolü başarısız:", err);
+            logout(); 
+        }
     };
 
     // ─── NAVIGATION ───
@@ -89,15 +124,24 @@
         $(`#panel-${panelId}`)?.classList.remove('hidden');
         $$('.sidebar-link').forEach(l => l.classList.remove('active'));
         $(`.sidebar-link[data-panel="${panelId}"]`)?.classList.add('active');
-        $('#panel-title').textContent = $(`.sidebar-link[data-panel="${panelId}"]`)?.textContent?.trim() || '';
+        
+        const titleEl = $('#panel-title');
+        if (titleEl) {
+            titleEl.textContent = $(`.sidebar-link[data-panel="${panelId}"]`)?.textContent?.trim() || '';
+        }
     };
 
     // ─── CONTENT ───
     const loadContent = async () => {
-        const res = await api(API.content);
-        if (res.success) {
-            contentData = res.data;
-            populateAllForms();
+        if (!API || !API.content) return;
+        try {
+            const res = await api(API.content);
+            if (res && res.success) {
+                contentData = res.data;
+                populateAllForms();
+            }
+        } catch (err) {
+            console.error("İçerik verileri yüklenirken hata:", err);
         }
     };
 
@@ -145,10 +189,12 @@
             setVal('contact-hours', c.iletisim.saatler);
             setVal('contact-whatsapp', c.iletisim.whatsapp);
             setVal('contact-map', c.iletisim.mapEmbedUrl);
-            $('#contact-whatsapp-form-toggle').checked = c.iletisim.isWhatsAppForm;
+            const wsToggle = $('#contact-whatsapp-form-toggle');
+            if (wsToggle) wsToggle.checked = !!c.iletisim.isWhatsAppForm;
             setVal('contact-whatsapp-template', c.iletisim.whatsappMessageTemplate);
         } else {
-            $('#contact-whatsapp-form-toggle').checked = false;
+            const wsToggle = $('#contact-whatsapp-form-toggle');
+            if (wsToggle) wsToggle.checked = false;
         }
         if (c.footer) {
             setVal('footer-tagline', c.footer.tagline);
@@ -173,7 +219,8 @@
 
     // ─── MEDIA UPLOAD HELPERS ───
     const handleFileUpload = async (fileInput, targetInputId) => {
-        const file = fileInput.files[0];
+        if (!API || !API.upload) return;
+        const file = fileInput.files?.[0];
         if (!file) return;
 
         const formData = new FormData();
@@ -188,12 +235,14 @@
             });
             const result = await res.json();
             if (result.success) {
-                $(`#${targetInputId}`).value = result.data.url;
+                const targetInput = $(`#${targetInputId}`);
+                if (targetInput) targetInput.value = result.data.url;
                 toast('Yükleme başarılı!');
             } else {
-                toast(result.message, 'error');
+                toast(result.message || 'Yükleme başarısız', 'error');
             }
-        } catch {
+        } catch (err) {
+            console.error("Medya yükleme hatası:", err);
             toast('Yükleme sırasında bir hata oluştu', 'error');
         }
     };
@@ -231,117 +280,132 @@
     };
 
     const saveSection = async (section, data) => {
+        if (!API || !API.content) return;
         try {
             const res = await api(API.content, { method: 'POST', body: JSON.stringify({ [section]: data }) });
-            if (res.success) { toast('Kaydedildi!'); contentData = res.data; }
-            else toast(res.message, 'error');
-        } catch { toast('Kaydetme hatası', 'error'); }
+            if (res && res.success) { 
+                toast('Kaydedildi!'); 
+                contentData = res.data; 
+            } else {
+                toast(res?.message || 'Kaydetme başarısız', 'error');
+            }
+        } catch (err) { 
+            console.error(`${section} kaydedilirken hata oluştu:`, err);
+            toast('Kaydetme hatası', 'error'); 
+        }
     };
 
     const saveHero = () => saveSection('hero', {
-        tagline: $('#hero-tagline').value,
-        titleLine1: $('#hero-title1').value,
-        titleLine2: $('#hero-title2').value,
-        description: $('#hero-desc').value,
-        videoUrl: $('#hero-video').value,
-        ctaPrimary: $('#hero-cta1').value,
-        ctaSecondary: $('#hero-cta2').value
+        tagline: $('#hero-tagline')?.value || '',
+        titleLine1: $('#hero-title1')?.value || '',
+        titleLine2: $('#hero-title2')?.value || '',
+        description: $('#hero-desc')?.value || '',
+        videoUrl: $('#hero-video')?.value || '',
+        ctaPrimary: $('#hero-cta1')?.value || '',
+        ctaSecondary: $('#hero-cta2')?.value || ''
     });
 
     const saveAbout = () => saveSection('hakkimizda', {
-        sectionLabel: $('#about-label').value,
-        title: $('#about-title').value,
-        subtitle: $('#about-subtitle').value,
-        text1: $('#about-text1').value,
-        text2: $('#about-text2').value,
-        imageUrl: $('#about-image').value
+        sectionLabel: $('#about-label')?.value || '',
+        title: $('#about-title')?.value || '',
+        subtitle: $('#about-subtitle')?.value || '',
+        text1: $('#about-text1')?.value || '',
+        text2: $('#about-text2')?.value || '',
+        imageUrl: $('#about-image')?.value || ''
     });
 
     const saveNews = () => {
-        const items = [...$$('[data-section="haberler"]')].map((el, i) => ({
-            title: el.querySelector('.card-title').value,
-            description: el.querySelector('.card-desc').value,
-            image: el.querySelector('.card-img').value,
-            order: i + 1
+        const items = [...$$('[data-section="haberler"]')].map((el) => ({
+            title: el.querySelector('.card-title')?.value || '',
+            description: el.querySelector('.card-desc')?.value || '',
+            image: el.querySelector('.card-img')?.value || '',
+            order: 1
         }));
-        const randomFacts = ($('#news-facts').value || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        const randomFacts = ($('#news-facts')?.value || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
         saveSection('haberler', {
             ...(contentData.haberler || {}),
-            sectionLabel: $('#news-label').value,
-            title: $('#news-title').value,
-            intro: $('#news-intro').value,
+            sectionLabel: $('#news-label')?.value || '',
+            title: $('#news-title')?.value || '',
+            intro: $('#news-intro')?.value || '',
             randomFacts,
             items
         });
     };
 
-    const savePrices = () => saveSection('paketler', {
-        ...contentData.paketler,
-        items: contentData.paketler.items.map((item, i) => ({
-            ...item,
-            fiyat: Number($(`#price-${i+1}`).value)
-        }))
-    });
+    const savePrices = () => {
+        if (!contentData.paketler || !contentData.paketler.items) return;
+        saveSection('paketler', {
+            ...contentData.paketler,
+            items: contentData.paketler.items.map((item, i) => ({
+                ...item,
+                fiyat: Number($(`#price-${i+1}`)?.value || 0)
+            }))
+        });
+    };
 
     const saveContact = () => {
-        const phone = $('#contact-phone').value;
+        const phone = $('#contact-phone')?.value || '';
         const phoneRaw = phone.replace(/\D/g, '');
         return saveSection('iletisim', {
             ...contentData.iletisim,
-            sectionLabel: $('#contact-label').value,
-            title: $('#contact-title').value,
+            sectionLabel: $('#contact-label')?.value || '',
+            title: $('#contact-title')?.value || '',
             telefon: phone,
             telefonRaw: phoneRaw,
-            email: $('#contact-email').value,
-            adres: $('#contact-address').value,
-            saatler: $('#contact-hours').value,
-            whatsapp: $('#contact-whatsapp').value,
-            mapEmbedUrl: $('#contact-map').value,
-            isWhatsAppForm: $('#contact-whatsapp-form-toggle').checked,
-            whatsappMessageTemplate: $('#contact-whatsapp-template').value
+            email: $('#contact-email')?.value || '',
+            adres: $('#contact-address')?.value || '',
+            saatler: $('#contact-hours')?.value || '',
+            whatsapp: $('#contact-whatsapp')?.value || '',
+            mapEmbedUrl: $('#contact-map')?.value || '',
+            isWhatsAppForm: !!$('#contact-whatsapp-form-toggle')?.checked,
+            whatsappMessageTemplate: $('#contact-whatsapp-template')?.value || ''
         });
     };
 
     const saveFooter = () => saveSection('footer', {
         ...contentData.footer,
-        tagline: $('#footer-tagline').value,
-        copyright: $('#footer-copyright').value,
-        poweredBy: $('#footer-powered').value
+        tagline: $('#footer-tagline')?.value || '',
+        copyright: $('#footer-copyright')?.value || '',
+        poweredBy: $('#footer-powered')?.value || ''
     });
 
     const saveSEO = () => saveSection('seo', {
-        title: $('#seo-title').value,
-        description: $('#seo-desc').value,
-        keywords: $('#seo-keywords').value,
-        canonical: $('#seo-canonical').value,
-        ogImage: $('#seo-ogimage').value
+        title: $('#seo-title')?.value || '',
+        description: $('#seo-desc')?.value || '',
+        keywords: $('#seo-keywords')?.value || '',
+        canonical: $('#seo-canonical')?.value || '',
+        ogImage: $('#seo-ogimage')?.value || ''
     });
 
     const saveSocial = () => saveSection('sosyalMedya', [
-        { platform: 'instagram', url: $('#social-instagram').value, isActive: true },
-        { platform: 'whatsapp', url: $('#social-whatsapp').value, isActive: true }
+        { platform: 'instagram', url: $('#social-instagram')?.value || '', isActive: true },
+        { platform: 'whatsapp', url: $('#social-whatsapp')?.value || '', isActive: true }
     ]);
 
     const savePrograms = () => {
         const items = [...$$('[data-section="programlar"]')].map(el => ({
-            title: el.querySelector('.card-title').value,
-            description: el.querySelector('.card-desc').value,
-            image: el.querySelector('.card-img').value
+            title: el.querySelector('.card-title')?.value || '',
+            description: el.querySelector('.card-desc')?.value || '',
+            image: el.querySelector('.card-img')?.value || ''
         }));
         saveSection('programlar', { ...contentData.programlar, items });
     };
 
     // ─── LEADS ───
     const loadLeads = async () => {
+        if (!API || !API.contacts) return;
         try {
             const res = await api(API.contacts);
-            if (!res.success) return;
-            const leads = res.data;
-            $('#stat-total').textContent = leads.length;
-            $('#stat-pending').textContent = leads.filter(l => l.durum === 'Beklemede').length;
-            $('#stat-completed').textContent = leads.filter(l => l.durum === 'Arandı').length;
+            if (!res || !res.success) return;
+            const leads = res.data || [];
+            
+            const totalEl = $('#stat-total'); if (totalEl) totalEl.textContent = leads.length;
+            const pendingEl = $('#stat-pending'); if (pendingEl) pendingEl.textContent = leads.filter(l => l.durum === 'Beklemede').length;
+            const compEl = $('#stat-completed'); if (compEl) compEl.textContent = leads.filter(l => l.durum === 'Arandı').length;
 
             const container = $('#leads-container');
+            if (!container) return;
+
             if (!leads.length) {
                 container.innerHTML = '<p class="text-xs text-neutral-500 italic p-4">Henüz başvuru yok.</p>';
                 return;
@@ -355,38 +419,49 @@
                     <button onclick="Admin.updateLead('${lead._id}','İptal')" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs hover:bg-red-500 hover:text-white transition">İptal</button>
                 ` : `<span class="text-xs text-neutral-500 italic">${lead.durum}</span>`;
 
-                return `<div class="bg-brandCard p-4 rounded-xl border border-neutral-900 border-l-2 ${colors[lead.durum]} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                return `<div class="bg-brandCard p-4 rounded-xl border border-neutral-900 border-l-2 ${colors[lead.durum] || 'border-l-neutral-700'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <div class="flex items-center gap-2"><h3 class="text-sm font-bold text-white">${lead.adSoyad}</h3><span class="text-[9px] px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400">${lead.durum}</span></div>
-                        <p class="text-xs text-neutral-400 mt-1">${lead.telefon} · <span class="text-brandGold">${lead.brans}</span></p>
+                        <div class="flex items-center gap-2"><h3 class="text-sm font-bold text-white">${lead.adSoyad || ''}</h3><span class="text-[9px] px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400">${lead.durum || ''}</span></div>
+                        <p class="text-xs text-neutral-400 mt-1">${lead.telefon || ''} · <span class="text-brandGold">${lead.brans || ''}</span></p>
                         <p class="text-[10px] text-neutral-600 mt-1">${tarih}</p>
                     </div>
                     <div class="flex gap-2">${actions}</div>
                 </div>`;
             }).join('');
-        } catch { toast('Başvurular yüklenemedi', 'error'); }
+        } catch (err) { 
+            console.error("Başvurular (Leads) yüklenirken hata:", err);
+            toast('Başvurular yüklenemedi', 'error'); 
+        }
     };
 
     const updateLead = async (id, durum) => {
-        await api(`${API.contacts}/${id}`, { method: 'PUT', body: JSON.stringify({ durum }) });
-        loadLeads();
-        toast('Durum güncellendi');
+        if (!API || !API.contacts) return;
+        try {
+            await api(`${API.contacts}/${id}`, { method: 'PUT', body: JSON.stringify({ durum }) });
+            await loadLeads();
+            toast('Durum güncellendi');
+        } catch (err) {
+            console.error("Lead güncellenemedi:", err);
+        }
     };
 
     // ─── BLOG ───
     const loadBlogPosts = async () => {
+        if (!API || !API.blog) return;
         try {
             const res = await api(`${API.blog}/admin/all`);
-            if (!res.success) return;
+            if (!res || !res.success) return;
             const container = $('#blog-list');
-            if (!res.data.length) {
+            if (!container) return;
+            
+            if (!res.data || !res.data.length) {
                 container.innerHTML = '<p class="text-xs text-neutral-500 italic">Henüz blog yazısı yok.</p>';
                 return;
             }
             container.innerHTML = res.data.map(post => `
                 <div class="bg-brandCard p-4 rounded-xl border border-neutral-900 flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-bold text-white">${post.title}</h3>
+                        <h3 class="text-sm font-bold text-white">${post.title || ''}</h3>
                         <p class="text-[10px] text-neutral-500">${post.isPublished ? 'Yayında' : 'Taslak'} · ${new Date(post.createdAt).toLocaleDateString('tr-TR')}</p>
                     </div>
                     <div class="flex gap-2">
@@ -395,54 +470,81 @@
                     </div>
                 </div>
             `).join('');
-        } catch {}
+        } catch (err) {
+            console.error("Blog postları yüklenirken hata:", err);
+        }
     };
 
     const saveBlog = async () => {
-        const data = {
-            title: $('#blog-title').value,
-            slug: $('#blog-slug').value || $('#blog-title').value.toLowerCase().replace(/\s+/g, '-'),
-            excerpt: $('#blog-excerpt').value,
-            content: $('#blog-content').value,
-            isPublished: $('#blog-published').checked,
-            seo: { metaTitle: $('#blog-seo-title').value, metaDescription: $('#blog-seo-desc').value }
-        };
-        const id = $('#blog-edit-id').value;
-        const url = id ? `${API.blog}/${id}` : API.blog;
-        const method = id ? 'PUT' : 'POST';
-        const res = await api(url, { method, body: JSON.stringify(data) });
-        if (res.success) {
-            toast('Blog yazısı kaydedildi');
-            $('#blog-form').reset();
-            $('#blog-edit-id').value = '';
-            loadBlogPosts();
+        if (!API || !API.blog) return;
+        try {
+            const title = $('#blog-title')?.value || '';
+            const data = {
+                title,
+                slug: $('#blog-slug')?.value || title.toLowerCase().replace(/\s+/g, '-'),
+                excerpt: $('#blog-excerpt')?.value || '',
+                content: $('#blog-content')?.value || '',
+                isPublished: !!$('#blog-published')?.checked,
+                seo: { 
+                    metaTitle: $('#blog-seo-title')?.value || '', 
+                    metaDescription: $('#blog-seo-desc')?.value || '' 
+                }
+            };
+            const id = $('#blog-edit-id')?.value;
+            const url = id ? `${API.blog}/${id}` : API.blog;
+            const method = id ? 'PUT' : 'POST';
+            const res = await api(url, { method, body: JSON.stringify(data) });
+            if (res && res.success) {
+                toast('Blog yazısı kaydedildi');
+                $('#blog-form')?.reset();
+                const editIdEl = $('#blog-edit-id');
+                if (editIdEl) editIdEl.value = '';
+                await loadBlogPosts();
+            }
+        } catch (err) {
+            console.error("Blog kaydedilirken hata:", err);
         }
     };
 
     const editBlog = async (id) => {
-        const res = await api(`${API.blog}/admin/all`);
-        const post = res.data.find(p => p._id === id);
-        if (!post) return;
-        $('#blog-edit-id').value = post._id;
-        $('#blog-title').value = post.title;
-        $('#blog-slug').value = post.slug;
-        $('#blog-excerpt').value = post.excerpt;
-        $('#blog-content').value = post.content;
-        $('#blog-published').checked = post.isPublished;
-        switchPanel('blog');
+        if (!API || !API.blog) return;
+        try {
+            const res = await api(`${API.blog}/admin/all`);
+            if (!res || !res.data) return;
+            const post = res.data.find(p => p._id === id);
+            if (!post) return;
+            
+            const editIdEl = $('#blog-edit-id'); if (editIdEl) editIdEl.value = post._id;
+            const titleEl = $('#blog-title'); if (titleEl) titleEl.value = post.title || '';
+            const slugEl = $('#blog-slug'); if (slugEl) slugEl.value = post.slug || '';
+            const excEl = $('#blog-excerpt'); if (excEl) excEl.value = post.excerpt || '';
+            const contentEl = $('#blog-content'); if (contentEl) contentEl.value = post.content || '';
+            const pubEl = $('#blog-published'); if (pubEl) pubEl.checked = !!post.isPublished;
+            
+            switchPanel('blog');
+        } catch (err) {
+            console.error("Blog düzenleme moduna alınırken hata:", err);
+        }
     };
 
     const deleteBlog = async (id) => {
+        if (!API || !API.blog) return;
         if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
-        await api(`${API.blog}/${id}`, { method: 'DELETE' });
-        loadBlogPosts();
-        toast('Yazı silindi');
+        try {
+            await api(`${API.blog}/${id}`, { method: 'DELETE' });
+            await loadBlogPosts();
+            toast('Yazı silindi');
+        } catch (err) {
+            console.error("Blog silinirken hata:", err);
+        }
     };
 
     const initDashboard = async () => {
+        console.log("Dashboard verileri yüklenmeye başlanıyor...");
         await loadContent();
         await loadLeads();
         await loadBlogPosts();
+        console.log("Dashboard başarıyla kuruldu.");
     };
 
     // ─── INIT ───
@@ -472,5 +574,11 @@
         checkAuth();
     });
 
-    window.Admin = { updateLead, editBlog, deleteBlog, handleCardUpload: (input, targetId) => handleFileUpload(input, targetId) };
+    // IIFE dışına güvenli export (Dinamik HTML element olayları için şart)
+    window.Admin = { 
+        updateLead, 
+        editBlog, 
+        deleteBlog, 
+        handleCardUpload: (input, targetId) => handleFileUpload(input, targetId) 
+    };
 })();
