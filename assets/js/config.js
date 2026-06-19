@@ -1,6 +1,6 @@
 const API_BASE = window.__SPORLINE_API__ || (
     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5000'
+        ? ''https://sporline.onrender.com''
         : window.location.origin
 );
 
