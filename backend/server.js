@@ -30,16 +30,12 @@ app.use(helmet({
 }));
 app.use(compression());
 
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500,http://localhost:5000').split(',');
+// --- CORS AYARI GÜNCELLENDİ (Üretim ortamındaki kilit kırıldı) ---
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-            callback(null, true);
-        } else {
-            callback(new Error('CORS politikası tarafından engellendi.'));
-        }
-    },
-    credentials: true
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 const apiLimiter = rateLimit({
@@ -97,11 +93,10 @@ async function createDefaultAdmin() {
         }
 
         const usersCollection = db.collection('users');
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@sporlinefitness.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@sportlinefitness.com';
         const existingAdmin = await usersCollection.findOne({ email: adminEmail });
 
         if (!existingAdmin) {
-            // Projede hangi kütüphane yüklüyse dinamik olarak import ediyoruz
             let bcrypt;
             try {
                 bcrypt = require('bcryptjs');
@@ -132,7 +127,6 @@ async function createDefaultAdmin() {
         console.error('❌ Geçici admin oluşturma hatası:', err.message);
     }
 }
-// Sunucu ayağa kalktıktan 4 saniye sonra veritabanına enjekte etmeyi dener
 setTimeout(createDefaultAdmin, 4000);
 // =========================================================================
 
