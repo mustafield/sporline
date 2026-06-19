@@ -1,0 +1,212 @@
+html {
+    overflow-x: hidden;
+    background-color: #050505;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* Özel Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #050505; }
+body.light ::-webkit-scrollbar-track { background: #f8f9fa; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 4px; }
+body.light ::-webkit-scrollbar-thumb { background: #e9ecef; }
+::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+body:has(#menu-toggle:checked) {
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
+/* 3D ve Kart Hover Mekanizmaları */
+.style-3d { transform-style: preserve-3d; perspective: 1000px; }
+.reveal-text { opacity: 1; transform: none; }
+
+.animated-card, .pricing-card {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animated-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); 
+}
+.pricing-card:hover { 
+    transform: translateY(-8px) scale(1.01); 
+    border-color: rgba(212, 175, 55, 0.5); 
+}
+.animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.9s ease forwards;
+}
+.animate-slide-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideUp 0.9s ease forwards;
+}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(32px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* FÜTÜRİSTİK CLIP-PATH TEMA GEÇİŞ PERDESİ */
+#theme-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f8f9fa; /* Light mod rengi */
+    z-index: 999;
+    pointer-events: none;
+    clip-path: circle(0% at 0% 0%); /* Geçiş başlangıç noktası */
+    transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+}
+html.dark #theme-overlay {
+    background-color: #050505; /* Dark mod rengi */
+}
+
+/* PREMIUM INSTAGRAM GLOW BUTONU */
+.instagram-glow-btn:hover {
+    border-color: #ff1a1a;
+    box-shadow: 0 0 20px rgba(255, 26, 26, 0.4), 0 0 40px rgba(214, 175, 55, 0.2);
+    transform: translateY(-3px);
+}
+.instagram-glow-btn:hover .glow-layer {
+    opacity: 1;
+}
+.instagram-glow-btn:hover svg {
+    transform: scale(1.1);
+    color: #ffffff !important;
+}
+
+/* HUD SWITCHER ANİMASYONU */
+html.dark .hud-dot {
+    left: calc(100% - 18px);
+    background-color: #d4af37;
+}
+html.light .hud-dot {
+    left: 2px;
+    background-color: #990000; /* Iron Man kırmızı detayı */
+}
+
+/* Saf CSS Preloader Tetikleyicileri */
+#preloader { animation: fadeOutPreloader 0.5s ease 2.2s forwards; }
+#preloader-text { animation: textReveal 1s cubic-bezier(0.77, 0, 0.175, 1) 0.4s forwards; }
+#preloader-bar { animation: loaderProgress 1.5s cubic-bezier(0.77, 0, 0.175, 1) 0.2s forwards; }
+
+@keyframes textReveal { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes loaderProgress { 0% { width: 0; } 100% { width: 100%; } }
+@keyframes fadeOutPreloader { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+
+/* Erişilebilirlik - Skip Link */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 10000;
+    padding: 0.75rem 1.5rem;
+    background: #d4af37;
+    color: #050505;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    transition: top 0.3s;
+}
+.skip-link:focus {
+    top: 1rem;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Nav scroll state */
+nav.nav-scrolled {
+    background: rgba(5, 5, 5, 0.95) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+body.light nav.nav-scrolled {
+    background: rgba(248, 249, 250, 0.95) !important;
+}
+
+/* Footer premium */
+.footer-premium .footer-link {
+    position: relative;
+    display: inline-block;
+}
+.footer-premium .footer-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #d4af37;
+    transition: width 0.3s ease;
+}
+.footer-premium .footer-link:hover::after {
+    width: 100%;
+}
+
+/* Instagram glow - enhanced */
+.instagram-glow-btn {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+}
+.instagram-glow-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(from 0deg, #d4af37, #ff1a1a, #833ab4, #fd1d1d, #d4af37);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+    animation: instagram-rotate 3s linear infinite;
+    animation-play-state: paused;
+}
+.instagram-glow-btn:hover::before {
+    opacity: 0.6;
+    animation-play-state: running;
+}
+@keyframes instagram-rotate {
+    to { transform: rotate(360deg); }
+}
+
+/* Magnetic button base */
+.magnetic-btn {
+    will-change: transform;
+}
+
+/* Focus visible for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid #d4af37;
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    #preloader { display: none !important; }
+}
+
+/* Performance - content visibility */
+section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+}
