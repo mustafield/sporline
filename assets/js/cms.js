@@ -2,7 +2,9 @@
  * Sporline CMS - Dynamic content loader
  */
 (function () {
-    // Render canlı backend sunucu adresi entegre edildi.
+    // Render canlı backend adresi
+    // Eğer Express tarafında endpoint'ler app.get('/api/content') şeklindeyse '/api' kalmalı.
+    // Eğer app.get('/content') şeklindeyse sondaki '/api' kısmını silerek test edebilirsin reis.
     const BASE_API_URL = "https://sporline.onrender.com/api";
 
     const API = {
@@ -47,7 +49,7 @@
         setAttr('meta[name="twitter:image"]', 'content', seo.ogImage);
 
         const schemaEl = document.getElementById('schema-json');
-        if (schemaEl) {
+        if (schemaEl && API.schema) {
             fetch(API.schema).then(r => r.json()).then(res => {
                 if (res.success) schemaEl.textContent = JSON.stringify(res.data);
             }).catch(() => {});
@@ -125,7 +127,7 @@
             instagram: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 transition-transform duration-500 social-icon"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z"></path></svg>`,
             whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M187.58,144.84l-24-12a8,8,0,0,0-8,1l-11.1,9.25a112.51,112.51,0,0,1-40.47-40.47l9.25-11.1a8,8,0,0,0-10-4.32l-24,9.6A8,8,0,0,0,64,72.4c0,61.53,50.07,111.6,111.6,111.6a8,8,0,0,0,7.16-4l9.6-24A8,8,0,0,0,187.58,144.84Z"></path></svg>`,
             facebook: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,191.63V152h24a8,8,0,0,0,0-16H136V112a16,16,0,0,1,16-16h16a8,8,0,0,0,0-16H152a32,32,0,0,0-32,32v24H96a8,8,0,0,0,0,16h24v63.63a88,88,0,1,1,16,0Z"></path></svg>`,
-            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M164.44,121.34l-48-32A8,8,0,0,0,104,96v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,145.05V110.95L145.53,128Zm114-81.53v79.06a32,32,0,0,1-32,32H54a32,32,0,0,1-32-32V63.52a32,32,0,0,1-32-32h148a32,32,0,0,1;32,32Z"></path></svg>`
+            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M164.44,121.34l-48-32A8,8,0,0,0,104,96v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,145.05V110.95L145.53,128Zm114-81.53v79.06a32,32,0,0,1-32,32H54a32,32,0,0,1-32-32V63.52a32,32,0,0,1,32-32h148a32,32,0,0,1,32,32Z"></path></svg>`
         };
 
         container.innerHTML = items.filter(s => s.isActive).map(s => `
@@ -272,9 +274,11 @@
             if (result.success) {
                 contentData = result.data;
                 applyContent(contentData);
+            } else {
+                throw new Error("API success false döndü.");
             }
         } catch (err) {
-            console.warn('CMS içerik yüklenemedi, varsayılan içerik kullanılıyor. Fallback WhatsApp uygulanıyor.');
+            console.warn('CMS içerik sunucudan yüklenemedi, fallback moduna geçiliyor.');
             const fallback = window.SporlineConfig && window.SporlineConfig.fallbackWhatsApp ? window.SporlineConfig.fallbackWhatsApp : '';
             contentData = {
                 iletisim: {
@@ -290,27 +294,32 @@
     };
 
     const setupLiveUpdates = () => {
+        // API.contentStream tanımsızsa veya EventSource desteklenmiyorsa sessizce çıkarak çökmeyi engeller.
         if (!window.EventSource || !API.contentStream) return;
 
-        const source = new EventSource(API.contentStream);
-        source.addEventListener('contentUpdated', (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data) {
-                    contentData = data;
-                    applyContent(contentData);
-                    showToast('Sitede yeni güncelleme var. İçerik yenilendi.', 'success');
+        try {
+            const source = new EventSource(API.contentStream);
+            source.addEventListener('contentUpdated', (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data) {
+                        contentData = data;
+                        applyContent(contentData);
+                        showToast('Sitede yeni güncelleme var. İçerik yenilendi.', 'success');
+                    }
+                } catch (err) {
+                    console.warn('Canlı içerik güncellemesi işlenemedi.', err);
                 }
-            } catch (err) {
-                console.warn('Canlı içerik güncellemesi işlenemedi.', err);
-            }
-        });
+            });
 
-        source.addEventListener('error', (event) => {
-            if (source.readyState === EventSource.CLOSED) {
-                console.warn('Canlı güncelleme bağlantısı kapatıldı.');
-            }
-        });
+            source.addEventListener('error', () => {
+                if (source.readyState === EventSource.CLOSED) {
+                    console.warn('Canlı güncelleme bağlantısı kapatıldı.');
+                }
+            });
+        } catch (e) {
+            console.warn("EventSource başlatılamadı:", e);
+        }
     };
 
     const setupVIPForm = () => {
