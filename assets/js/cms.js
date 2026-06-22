@@ -2,7 +2,16 @@
  * Sporline CMS - Dynamic content loader
  */
 (function () {
-    const { API } = window.SporlineConfig || {};
+    // Render canlı backend sunucu adresi entegre edildi.
+    const BASE_API_URL = "https://sporline.onrender.com/api";
+
+    const API = {
+        content: `${BASE_API_URL}/content`,
+        contentStream: `${BASE_API_URL}/content/stream`,
+        schema: `${BASE_API_URL}/schema`,
+        contacts: `${BASE_API_URL}/contacts`
+    };
+
     let contentData = null;
 
     const setText = (selector, value) => {
@@ -85,12 +94,9 @@
         const factItems = (data.randomFacts || []).map(fact => `
                 <li class="text-[11px] text-neutral-400 leading-relaxed">${fact}</li>
             `).join('');
-        if (factList) {
-            factList.innerHTML = factItems;
-        }
-        if (sidebarFactList) {
-            sidebarFactList.innerHTML = factItems;
-        }
+        if (factList) factList.innerHTML = factItems;
+        if (sidebarFactList) sidebarFactList.innerHTML = factItems;
+        
         if (!data.items?.length) {
             container.innerHTML = '<p class="text-xs text-neutral-500">Henüz haber eklenmedi.</p>';
             return;
@@ -119,7 +125,7 @@
             instagram: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 transition-transform duration-500 social-icon"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z"></path></svg>`,
             whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M187.58,144.84l-24-12a8,8,0,0,0-8,1l-11.1,9.25a112.51,112.51,0,0,1-40.47-40.47l9.25-11.1a8,8,0,0,0-10-4.32l-24,9.6A8,8,0,0,0,64,72.4c0,61.53,50.07,111.6,111.6,111.6a8,8,0,0,0,7.16-4l9.6-24A8,8,0,0,0,187.58,144.84Z"></path></svg>`,
             facebook: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,191.63V152h24a8,8,0,0,0,0-16H136V112a16,16,0,0,1,16-16h16a8,8,0,0,0,0-16H152a32,32,0,0,0-32,32v24H96a8,8,0,0,0,0,16h24v63.63a88,88,0,1,1,16,0Z"></path></svg>`,
-            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M164.44,121.34l-48-32A8,8,0,0,0,104,96v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,145.05V110.95L145.53,128Zm114-81.53v79.06a32,32,0,0,1-32,32H54a32,32,0,0,1-32-32V63.52a32,32,0,0,1,32-32h148a32,32,0,0,1,32,32Z"></path></svg>`
+            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M164.44,121.34l-48-32A8,8,0,0,0,104,96v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,145.05V110.95L145.53,128Zm114-81.53v79.06a32,32,0,0,1-32,32H54a32,32,0,0,1-32-32V63.52a32,32,0,0,1-32-32h148a32,32,0,0,1;32,32Z"></path></svg>`
         };
 
         container.innerHTML = items.filter(s => s.isActive).map(s => `
@@ -221,7 +227,7 @@
                 btn.setAttribute('target', '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             });
-            // Sponsorluk başvurusu butonunu WhatsApp'a bağla
+            
             const sponsorBtn = document.getElementById('sponsor-whatsapp-btn');
             if (sponsorBtn) {
                 if (iletisim.whatsapp) {
@@ -269,7 +275,6 @@
             }
         } catch (err) {
             console.warn('CMS içerik yüklenemedi, varsayılan içerik kullanılıyor. Fallback WhatsApp uygulanıyor.');
-            // Eğer sunucuya ulaşılamazsa kullanıcı tarafından belirtilen fallback numarayı kullan
             const fallback = window.SporlineConfig && window.SporlineConfig.fallbackWhatsApp ? window.SporlineConfig.fallbackWhatsApp : '';
             contentData = {
                 iletisim: {
@@ -322,10 +327,9 @@
             const name = document.getElementById('form-name').value;
             const phone = document.getElementById('form-phone').value;
             const branch = document.getElementById('form-branch').value;
-            const message = document.getElementById('form-message') ? document.getElementById('form-message').value : ''; // Eğer mesaj alanı varsa al
+            const message = document.getElementById('form-message') ? document.getElementById('form-message').value : '';
 
-            if (contentData?.iletisim?.whatsapp) {
-                // WhatsApp'a yönlendir
+            if (contentData?.iletisim?.whatsapp && contentData.iletisim.isWhatsAppForm) {
                 let whatsappMessage = contentData.iletisim.whatsappMessageTemplate || "Merhaba Sporline Fitness, web sitenizdeki form aracılığıyla size ulaşıyorum.%0A%0A*İsim:* {name}%0A*Telefon:* {phone}%0A*Branş:* {branch}%0A*Mesaj:* {message}";
                 whatsappMessage = whatsappMessage
                     .replace('{name}', name)
@@ -339,12 +343,11 @@
                 btn.disabled = false;
                 btn.textContent = originalText;
             } else {
-                // Mevcut API çağrısını sürdür
                 try {
                     const res = await fetch(API.contacts, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adSoyad: name, telefon: phone, brans: branch, mesaj: message }) // Mesajı da ekledik
+                        body: JSON.stringify({ adSoyad: name, telefon: phone, brans: branch, mesaj: message })
                     });
                     const result = await res.json();
                     if (result.success) {
