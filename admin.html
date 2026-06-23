@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     
-    <!-- ─── VERCEL VE TARAYICI CACHE ENGELLEME ETİKETLERİ ─── -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -22,176 +21,190 @@
                 extend: {
                     colors: {
                         brandDark: '#030303', 
-                        brandCard: '#0a0a0c', 
-                        brandInput: '#121216',
-                        brandGold: '#d4af37',
-                        hudSuccess: '#10b981', 
-                        hudWarning: '#f59e0b', 
-                        hudDanger: '#ef4444'
+                        brandCard: '#0a0a0c',
+                        brandGold: '#e5b842',
+                        brandGray: '#121214'
                     },
-                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Syne', 'sans-serif'] }
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        syne: ['Syne', 'sans-serif']
+                    }
                 }
             }
         }
     </script>
     <style>
-        .sidebar-link.active { background: rgba(212,175,55,0.08); color: #d4af37; border-left: 3px solid #d4af37; font-weight: 600; }
-        .sidebar-link { border-left: 3px solid transparent; transition: all 0.2s ease-in-out; }
-        .sidebar-link:hover:not(.active) { background: rgba(255,255,255,0.02); color: #ffffff; }
-        
-        /* Premium Apple Tarzı Kusursuz Inputlar */
-        .form-input { 
+        .form-input {
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 12px !important;
-            padding: 10px 16px !important;
-            font-size: 0.875rem !important;
-            background-color: #121216 !important;
-            color: #ffffff !important;
-            transition: all 0.2s ease-in-out !important;
+            background-color: #030303;
+            border: 1px solid #1c1c21;
+            border-radius: 0.75rem;
+            padding: 0.65rem 1rem;
+            font-size: 0.8rem;
+            color: #ffffff;
+            transition: all 0.2s;
         }
         .form-input:focus {
-            outline: none !important;
-            border-color: #d4af37 !important;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15) !important;
-            background-color: #16161c !important;
+            outline: none;
+            border-color: #e5b842;
+            box-shadow: 0 0 0 2px rgba(229, 184, 66, 0.15);
         }
-        
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active,
-        textarea:-webkit-autofill,
-        textarea:-webkit-autofill:hover,
-        textarea:-webkit-autofill:focus,
-        textarea:-webkit-autofill:active {
-            -webkit-text-fill-color: #ffffff !important;
-            -webkit-box-shadow: 0 0 0px 1000px #121216 inset !important;
-            box-shadow: 0 0 0px 1000px #121216 inset !important;
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #a3a3a3;
+            transition: all 0.2s;
         }
-
-        /* Mobil Sidebar Geçiş Efektleri */
-        @media (max-width: 1023px) {
-            .sidebar-mobile-active { transform: translateX(0); }
-            .sidebar-mobile-inactive { transform: translateX(-100%); }
+        .sidebar-link:hover, .sidebar-link.active {
+            color: #ffffff;
+            background-color: #0a0a0c;
         }
+        .sidebar-link.active {
+            border-left: 3px solid #e5b842;
+            border-radius: 0 0.75rem 0.75rem 0;
+        }
+        .admin-panel {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Gizli kaydırma çubuğu */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-brandDark text-neutral-200 antialiased font-sans min-h-screen selection:bg-brandGold/20 selection:text-brandGold">
+<body class="bg-brandDark text-neutral-200 font-sans min-h-screen flex antialiased selection:bg-brandGold selection:text-brandDark">
 
-    <!-- Bildirim Kutusu -->
-    <div id="admin-toast" class="fixed top-4 right-4 z-[9999] px-6 py-3.5 rounded-2xl text-sm font-semibold shadow-[0_8px_32px_rgba(0,0,0,0.5)] opacity-0 backdrop-blur-md transition-all duration-300"></div>
-
-    <!-- Giriş Ekranı (Login) -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center px-4 relative bg-brandDark">
-        <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:30px_30px]"></div>
-        <div class="relative z-10 w-full max-w-md">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-black font-heading tracking-widest text-white">SPORLINE<span class="text-brandGold">HQ</span></h1>
-                <p class="text-[10px] text-neutral-500 mt-2 font-mono uppercase tracking-widest">Yönetim Paneli v2.0</p>
+    <div id="login-screen" class="fixed inset-0 bg-brandDark z-[9999] flex items-center justify-center p-4">
+        <div class="bg-brandCard w-full max-w-md p-8 rounded-2xl border border-neutral-900/80 shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <h1 class="font-syne text-2xl font-extrabold text-white uppercase tracking-widest">SPORLINE</h1>
+                <p class="text-xs text-neutral-400">Yönetim Paneline Giriş Yapın</p>
             </div>
-            <form id="login-form" class="bg-brandCard p-8 rounded-3xl border border-neutral-900/60 space-y-6 shadow-[0_12px_40px_rgba(0,0,0,0.7)] backdrop-blur-xl" autocomplete="off">
+            <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-2">E-posta</label>
-                    <input type="email" id="login-email" required class="form-input" placeholder="admin@sporlinefitness.com" autocomplete="off">
+                    <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">E-Posta Adresi</label>
+                    <input type="email" id="login-email" class="form-input" required placeholder="admin@sportlinefitness.com">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-2">Şifre</label>
-                    <input type="password" id="login-password" required class="form-input" placeholder="••••••••" autocomplete="new-password">
+                    <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Şifre</label>
+                    <input type="password" id="login-password" class="form-input" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="w-full bg-brandGold text-brandDark py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 shadow-lg shadow-brandGold/10">Giriş Yap</button>
+                <button type="submit" class="w-full bg-brandGold text-brandDark font-bold py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-white transition duration-200 shadow-lg shadow-brandGold/10">Giriş Yap</button>
             </form>
         </div>
     </div>
 
-    <!-- Ana Uygulama Alanı -->
-    <div id="admin-app" class="hidden min-h-screen flex flex-col lg:flex-row">
-        
-        <!-- Mobil Arka Plan Perdesi -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden lg:hidden"></div>
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-brandCard border-b border-neutral-950 flex items-center justify-between px-4 z-40">
+        <span class="font-syne text-sm font-black tracking-widest text-white">SPORLINE ADMIN</span>
+        <button id="menu-toggle-btn" class="text-neutral-400 hover:text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </div>
 
-        <!-- Yan Menü (Sidebar) -->
-        <aside id="admin-sidebar" class="w-64 bg-brandCard border-r border-neutral-900/80 flex flex-col fixed h-full z-30 transition-transform duration-300 ease-in-out sidebar-mobile-inactive lg:transform-none">
-            <div class="p-5 border-b border-neutral-900/80 flex items-center justify-between">
-                <div>
-                    <h1 class="text-sm font-black font-heading tracking-widest text-white">SPORLINE<span class="text-brandGold">HQ</span></h1>
-                    <p class="text-[9px] text-neutral-600 font-mono mt-0.5">CMS v2.0</p>
-                </div>
-                <!-- Mobil Kapatma Butonu -->
-                <button id="close-sidebar-btn" class="lg:hidden text-neutral-400 hover:text-white p-1">
-                    ✕
-                </button>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden"></div>
+
+    <aside id="admin-sidebar" class="w-64 bg-brandDark border-r border-neutral-950 flex flex-col fixed inset-y-0 left-0 z-50 lg:z-30 transform lg:transform-none transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0 pt-16 lg:pt-0">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-neutral-950/40 lg:block lg:pt-5 lg:h-20">
+            <div class="space-y-0.5">
+                <span class="font-syne text-base font-black tracking-widest text-white block">SPORLINE</span>
+                <span class="text-[9px] font-bold text-brandGold uppercase tracking-widest block opacity-80">CMS v2.0 Kontrol</span>
             </div>
-            <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-                <a href="#" class="sidebar-link active flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="dashboard">📊 Dashboard</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="hero">🎯 Hero Alanı</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="about">📖 Hakkımızda</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="news">📰 Haberler</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="athletes">🏅 Milli Sporcular</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="programs">🏋️ Programlar</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="prices">💰 Paketler</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="products">💊 Ürün Vitrini</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="sponsors">🤝 Sponsorlar</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="contact">📞 İletişim</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="footer">🦶 Footer</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="seo">🔍 SEO</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="social">📱 Sosyal Medya</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="leads">📋 VIP Başvurular</a>
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-neutral-400" data-panel="blog">✍️ Blog</a>
-            </nav>
-            <div class="p-4 border-t border-neutral-900/80 bg-brandDark/20">
-                <p id="user-name" class="text-xs font-medium text-neutral-300 truncate">Admin</p>
-                <button id="logout-btn" class="text-[10px] text-red-400/80 hover:text-red-400 mt-1 font-semibold transition">Çıkış Yap</button>
+            <button id="close-sidebar-btn" class="lg:hidden text-neutral-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1 no-scrollbar">
+            <a href="#" data-panel="leads" class="sidebar-link active">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L22 8m-9 13a9 9 0 01-9-9V5a2 2 0 012-2h12a2 2 0 012 2v10a9 9 0 01-9 9z"></path></svg>
+                Gelen Talepler
+            </a>
+            <div class="h-px bg-neutral-900/60 my-2"></div>
+            <a href="#" data-panel="hero" class="sidebar-link">Hero Ayarları</a>
+            <a href="#" data-panel="about" class="sidebar-link">Hakkımızda</a>
+            <a href="#" data-panel="news" class="sidebar-link">Haber şeridi</a>
+            <a href="#" data-panel="programs" class="sidebar-link">Antrenman Programları</a>
+            <a href="#" data-panel="prices" class="sidebar-link">Fiyat Paketleri</a>
+            <a href="#" data-panel="athletes" class="sidebar-link">Milli Sporcular</a>
+            <a href="#" data-panel="products" class="sidebar-link">Ürün Alışveriş</a>
+            <a href="#" data-panel="sponsors" class="sidebar-link">Sponsorlar</a>
+            <a href="#" data-panel="blog" class="sidebar-link">Blog Yazıları</a>
+            <a href="#" data-panel="musics" class="sidebar-link text-brandGold">🎵 Müzik Ayarları</a>
+            <div class="h-px bg-neutral-900/60 my-2"></div>
+            <a href="#" data-panel="contact" class="sidebar-link">İletişim Bilgileri</a>
+            <a href="#" data-panel="social" class="sidebar-link">Sosyal Medya</a>
+            <a href="#" data-panel="footer" class="sidebar-link">Footer / Menü</a>
+            <a href="#" data-panel="seo" class="sidebar-link">SEO Ayarları</a>
+        </nav>
+
+        <div class="p-4 border-t border-neutral-950/40 bg-neutral-950/10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 truncate max-w-[150px]">
+                <div class="w-7 h-7 bg-brandGold/10 border border-brandGold/20 rounded-full flex items-center justify-center text-brandGold font-bold text-xs uppercase" id="user-avatar">-</div>
+                <span class="text-xs text-neutral-300 font-medium truncate" id="user-name">Yükleniyor...</span>
             </div>
-        </aside>
+            <button id="logout-btn" class="text-neutral-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-neutral-900/60 transition" title="Çıkış Yap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
+        </div>
+    </aside>
 
-        <!-- İçerik Alanı (Main Content) -->
-        <div class="flex-1 flex flex-col lg:pl-64 min-w-0">
-            <header class="border-b border-neutral-900/80 bg-brandDark/70 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-                <div class="flex items-center gap-3">
-                    <!-- Hamburger Menü Butonu (Mobil için) -->
-                    <button id="menu-toggle-btn" class="lg:hidden text-neutral-400 hover:text-white p-1.5 border border-neutral-800 rounded-lg">
-                        ☰
-                    </button>
-                    <h2 id="panel-title" class="text-sm font-bold font-heading uppercase tracking-widest text-white">Dashboard</h2>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span class="hidden sm:flex items-center gap-2 text-[10px] text-neutral-500 font-medium"><span class="w-2 h-2 rounded-full bg-hudSuccess animate-pulse"></span>Çevrimiçi</span>
-                    <a href="index.html" target="_blank" class="text-[10px] text-neutral-300 font-semibold hover:text-brandGold border border-neutral-800 px-4 py-2 rounded-full transition duration-200 backdrop-blur-sm bg-neutral-900/20">Siteyi Gör →</a>
-                </div>
-            </header>
-
-            <main class="p-4 sm:p-6 max-w-5xl w-full mx-auto flex-1">
-
-                <!-- PANEL: DASHBOARD -->
-                <div id="panel-dashboard" class="admin-panel space-y-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="bg-brandCard p-5 rounded-2xl border border-neutral-900/60 shadow-lg">
-                            <span class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Toplam Başvuru</span>
-                            <div id="stat-total" class="text-3xl font-black font-heading mt-2 text-white">0</div>
+    <main class="flex-1 lg:pl-64 pt-16 lg:pt-0 min-h-screen flex flex-col bg-brandDark/50">
+        <div class="p-4 md:p-8 flex-1 max-w-6xl w-full mx-auto">
+            
+            <div id="panels-wrapper">
+                <div id="panel-leads" class="admin-panel space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-900 pb-4">
+                        <div>
+                            <h2 class="font-syne text-lg font-bold text-white uppercase tracking-wider">İletişim Talepleri</h2>
+                            <p class="text-xs text-neutral-400">Web sitesi üzerinden form dolduran kullanıcıların listesi</p>
                         </div>
-                        <div class="bg-brandCard p-5 rounded-2xl border border-neutral-900/60 shadow-lg">
-                            <span class="text-[10px] font-bold text-hudWarning uppercase tracking-wider">Bekleyen</span>
-                            <div id="stat-pending" class="text-3xl font-black font-heading text-hudWarning mt-2">0</div>
-                        </div>
-                        <div class="bg-brandCard p-5 rounded-2xl border border-neutral-900/60 shadow-lg">
-                            <span class="text-[10px] font-bold text-hudSuccess uppercase tracking-wider">Tamamlanan</span>
-                            <div id="stat-completed" class="text-3xl font-black font-heading text-hudSuccess mt-2">0</div>
+                        <div class="flex gap-2">
+                            <button onclick="window.location.reload()" class="bg-brandCard border border-neutral-900 px-4 py-2 rounded-xl text-xs font-semibold text-white hover:bg-neutral-900">Yenile</button>
                         </div>
                     </div>
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 shadow-lg space-y-2">
-                        <h3 class="text-sm font-bold text-white">Hoş Geldiniz</h3>
-                        <p class="text-xs text-neutral-400 leading-relaxed">Sol menüden site içeriklerini, SEO ayarlarını, fiyatları, iletişim bilgilerini ve blog yazılarını kod değişikliği yapmadan yönetebilirsiniz.</p>
+                    
+                    <div class="bg-brandCard rounded-2xl border border-neutral-900/60 overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-neutral-950/40 text-neutral-400 font-bold border-b border-neutral-900 uppercase tracking-wider text-[10px]">
+                                        <th class="p-4">Ad Soyad</th>
+                                        <th class="p-4">İletişim</th>
+                                        <th class="p-4">Konu / Program</th>
+                                        <th class="p-4">Mesaj</th>
+                                        <th class="p-4">Tarih</th>
+                                        <th class="p-4 text-right">Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leads-table-body" class="divide-y divide-neutral-900/40 text-neutral-300">
+                                    <tr><td colspan="6" class="p-8 text-center text-neutral-500">Talepler yükleniyor...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- PANEL: HERO -->
                 <div id="panel-hero" class="admin-panel hidden space-y-4">
                     <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
                         <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Hero Bölümü</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Tagline</label><input id="hero-tagline" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Video URL</label><input id="hero-video" class="form-input"></div>
+                            <div>
+                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Video URL</label>
+                                <div class="flex gap-2">
+                                    <input id="hero-video" class="form-input" placeholder="Video Linki veya Yükle">
+                                    <input type="file" id="hero-video-file" class="hidden" accept="video/*">
+                                    <button type="button" onclick="document.getElementById('hero-video-file').click()" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Video Yükle</button>
+                                </div>
+                            </div>
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık Satır 1</label><input id="hero-title1" class="form-input"></div>
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık Satır 2</label><input id="hero-title2" class="form-input"></div>
                         </div>
@@ -204,7 +217,6 @@
                     </div>
                 </div>
 
-                <!-- PANEL: ABOUT -->
                 <div id="panel-about" class="admin-panel hidden space-y-4">
                     <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
                         <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Hakkımızda</h3>
@@ -215,190 +227,193 @@
                         <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Alt Başlık</label><input id="about-subtitle" class="form-input"></div>
                         <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Paragraf 1</label><textarea id="about-text1" class="form-input h-28 resize-none"></textarea></div>
                         <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Paragraf 2</label><textarea id="about-text2" class="form-input h-28 resize-none"></textarea></div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Görsel URL</label><input id="about-image" class="form-input"></div>
+                        <div>
+                            <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Görsel URL</label>
+                            <div class="flex gap-2">
+                                <input id="about-image" class="form-input" placeholder="Görsel Linki veya Yükle">
+                                <input type="file" id="about-image-file" class="hidden" accept="image/*">
+                                <button type="button" onclick="document.getElementById('about-image-file').click()" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Görsel Yükle</button>
+                            </div>
+                        </div>
                         <button id="save-about" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: NEWS -->
-                <div id="panel-news" class="admin-panel hidden space-y-4">
+                <div id="panel-musics" class="admin-panel hidden space-y-4">
                     <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Haber Köşesi</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Bölüm Etiketi</label><input id="news-label" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="news-title" class="form-input"></div>
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Fon Müzikleri (Sıralı Oynatma)</h3>
+                        <p class="text-[11px] text-neutral-400">Sitede arka arkaya sırasıyla çalacak 3 adet müziğin URL linkini girin.</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">1. Müzik URL</label>
+                                <input id="music-url-0" class="form-input" placeholder="Örn: assets/audio/music1.mp3 Veya uzak mp3 linki">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">2. Müzik URL</label>
+                                <input id="music-url-1" class="form-input" placeholder="Örn: assets/audio/music2.mp3">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">3. Müzik URL</label>
+                                <input id="music-url-2" class="form-input" placeholder="Örn: assets/audio/music3.mp3">
+                            </div>
                         </div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Giriş Metni</label><textarea id="news-intro" class="form-input h-24 resize-none"></textarea></div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Rastgele Bilgiler (Her satır ayrı bir bilgi olur)</label><textarea id="news-facts" class="form-input h-24 resize-none" placeholder="Her satıra yeni bir bilgi yazın"></textarea></div>
-                        <div id="news-editor" class="space-y-3"></div>
+                        
+                        <button id="save-musics" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Müzikleri Kaydet</button>
+                    </div>
+                </div>
+
+                <div id="panel-news" class="admin-panel hidden space-y-4">
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Haber Bandı (Marquee)</h3>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Kayan Metin İçeriği (Her satır bir haber)</label><textarea id="news-text" class="form-input h-48 resize-none" placeholder="Her satıra bir duyuru yazın..."></textarea></div>
                         <button id="save-news" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: ATHLETES -->
-                <div id="panel-athletes" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Milli Sporcular</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Bölüm Etiketi</label><input id="athletes-label" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="athletes-title" class="form-input"></div>
-                        </div>
-                        <div id="athletes-editor" class="space-y-3"></div>
-                        <button id="save-athletes" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
-                    </div>
-                </div>
-
-                <!-- PANEL: PROGRAMS -->
                 <div id="panel-programs" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Antrenman Programları</h3>
-                        <div id="programs-editor" class="space-y-3"></div>
-                        <button id="save-programs" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Antrenman Programları Kartları</h3>
+                        <div id="programs-container" class="space-y-6"></div>
+                        <button id="save-programs" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kart Değişikliklerini Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: PRICES -->
                 <div id="panel-prices" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Üyelik Fiyatları (₺)</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">1 Ay</label><input type="number" id="price-1" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">3 Ay</label><input type="number" id="price-2" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">3+1 Ay</label><input type="number" id="price-3" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">6 Ay</label><input type="number" id="price-4" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">1 Yıl</label><input type="number" id="price-5" class="form-input"></div>
-                        </div>
-                        <button id="save-prices" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Fiyat Paketleri Ayarları</h3>
+                        <div id="prices-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                        <button id="save-prices" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Fiyatları Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: PRODUCTS -->
+                <div id="panel-athletes" class="admin-panel hidden space-y-4">
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Milli Sporcularımız Kart Düzenleyici</h3>
+                        <div id="athletes-container" class="space-y-6"></div>
+                        <button id="save-athletes" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Sporcuları Kaydet</button>
+                    </div>
+                </div>
+
                 <div id="panel-products" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Ürün Vitrini</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Bölüm Etiketi</label><input id="products-label" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="products-title" class="form-input"></div>
-                        </div>
-                        <div id="products-editor" class="space-y-3"></div>
-                        <button id="save-products" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Ürün Alışveriş Alanı Kartları</h3>
+                        <div id="products-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                        <button id="save-products" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Ürünleri Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: SPONSORS -->
                 <div id="panel-sponsors" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Sponsorlar</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Bölüm Etiketi</label><input id="sponsors-label" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="sponsors-title" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">CTA Başlık</label><input id="sponsors-cta-title" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">CTA Metin</label><input id="sponsors-cta-text" class="form-input"></div>
-                        </div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Sponsor İsimleri (Her satır bir sponsor)</label><textarea id="sponsors-list" class="form-input h-32 resize-none" placeholder="VORTEX LABS&#10;NEXORA DIGITAL"></textarea></div>
-                        <button id="save-sponsors" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Sponsor Logoları Düzenleyici</h3>
+                        <div id="sponsors-container" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                        <button id="save-sponsors" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Sponsorları Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: CONTACT -->
                 <div id="panel-contact" class="admin-panel hidden space-y-4">
                     <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">İletişim Bilgileri</h3>
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">İletişim Kanalları Bilgileri</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Bölüm Etiketi</label><input id="contact-label" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="contact-title" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Telefon</label><input id="contact-phone" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">E-posta</label><input id="contact-email" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">WhatsApp</label><input id="contact-whatsapp" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Çalışma Saatleri</label><input id="contact-hours" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Telefon Numarası</label><input id="contact-phone" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">E-Posta Adresi</label><input id="contact-email" class="form-input"></div>
                         </div>
-                        <div class="grid grid-cols-1 gap-4 pt-2">
-                            <label class="inline-flex items-center gap-2.5 text-xs text-neutral-400 cursor-pointer select-none">
-                                <input type="checkbox" id="contact-whatsapp-form-toggle" class="rounded border-neutral-800 text-brandGold focus:ring-brandGold bg-brandInput w-4 h-4"> 
-                                WhatsApp formu ile gönder
-                            </label>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">WhatsApp Mesaj Şablonu</label><textarea id="contact-whatsapp-template" class="form-input h-24 resize-none" placeholder="{name}, {phone}, {branch}, {message}"></textarea></div>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Fiziksel Salon Adresi</label><input id="contact-address" class="form-input"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Google Harita Gömme Linki (src)</label><input id="contact-mapsrc" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Çalışma Saatleri Bilgisi</label><input id="contact-hours" class="form-input"></div>
                         </div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Adres</label><input id="contact-address" class="form-input"></div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Harita Embed URL</label><textarea id="contact-map" class="form-input h-20 resize-none"></textarea></div>
                         <button id="save-contact" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: FOOTER -->
-                <div id="panel-footer" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Footer İçeriği</h3>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Tagline</label><textarea id="footer-tagline" class="form-input h-24 resize-none"></textarea></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Telif Hakları</label><input id="footer-copyright" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Alt Bilgi / Powered By</label><input id="footer-powered" class="form-input"></div>
-                        </div>
-                        <button id="save-footer" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
-                    </div>
-                </div>
-
-                <!-- PANEL: SEO -->
-                <div id="panel-seo" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">SEO Ayarları</h3>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Meta Title</label><input id="seo-title" class="form-input"></div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Meta Description</label><textarea id="seo-desc" class="form-input h-24 resize-none"></textarea></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Keywords</label><input id="seo-keywords" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Canonical URL</label><input id="seo-canonical" class="form-input"></div>
-                        </div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">OG Image URL</label><input id="seo-ogimage" class="form-input"></div>
-                        <button id="save-seo" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
-                    </div>
-                </div>
-
-                <!-- PANEL: SOCIAL -->
                 <div id="panel-social" class="admin-panel hidden space-y-4">
-                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Sosyal Medya Linkleri</h3>
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Sosyal Medya Hesap Linkleri</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Instagram URL</label><input id="social-instagram" class="form-input"></div>
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">WhatsApp URL</label><input id="social-whatsapp" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Facebook URL</label><input id="social-facebook" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">YouTube URL</label><input id="social-youtube" class="form-input"></div>
                         </div>
                         <button id="save-social" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
                     </div>
                 </div>
 
-                <!-- PANEL: LEADS -->
-                <div id="panel-leads" class="admin-panel hidden space-y-4">
-                    <div id="leads-container" class="space-y-3"></div>
+                <div id="panel-footer" class="admin-panel hidden space-y-4">
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Footer Alt Bilgileri</h3>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Telif Hakkı Yazısı (Copyright)</label><input id="footer-copy" class="form-input"></div>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Kısa Hakkımızda Özeti</label><textarea id="footer-about" class="form-input h-24 resize-none"></textarea></div>
+                        <button id="save-footer" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                    </div>
                 </div>
 
-                <!-- PANEL: BLOG -->
-                <div id="panel-blog" class="admin-panel hidden space-y-6">
+                <div id="panel-seo" class="admin-panel hidden space-y-4">
                     <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-5 shadow-lg">
-                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Yeni Blog Yazısı</h3>
-                        <input type="hidden" id="blog-edit-id">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">SEO / Arama Motoru Optimizasyonu</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık</label><input id="blog-title" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Slug</label><input id="blog-slug" class="form-input" placeholder="otomatik-oluşturulur"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Site Başlığı (Title)</label><input id="seo-title" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Anahtar Kelimeler (Keywords)</label><input id="seo-keywords" class="form-input"></div>
                         </div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Özet</label><textarea id="blog-excerpt" class="form-input h-20 resize-none"></textarea></div>
-                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">İçerik</label><textarea id="blog-content" class="form-input h-44 resize-none"></textarea></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">SEO Title</label><input id="blog-seo-title" class="form-input"></div>
-                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">SEO Description</label><input id="blog-seo-desc" class="form-input"></div>
-                        </div>
-                        <label class="flex items-center gap-2.5 text-xs text-neutral-400 cursor-pointer select-none pt-1">
-                            <input type="checkbox" id="blog-published" class="rounded border-neutral-800 text-brandGold focus:ring-brandGold bg-brandInput w-4 h-4"> 
-                            Yayınla
-                        </label>
-                        <button id="save-blog" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Meta Açıklaması (Description)</label><textarea id="seo-desc" class="form-input h-24 resize-none"></textarea></div>
+                        <button id="save-seo" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition duration-200">Kaydet</button>
                     </div>
-                    <div id="blog-list" class="space-y-3"></div>
+                </div>
+
+                <div id="panel-blog" class="admin-panel hidden space-y-6">
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white" id="blog-form-title">Yeni Blog Yazısı Ekle</h3>
+                        <input type="hidden" id="blog-id">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Yazı Başlığı</label><input id="blog-title" class="form-input"></div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Kategori</label><input id="blog-category" class="form-input" placeholder="Örn: Vücut Geliştirme"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Görsel URL veya Dosya Yükle</label>
+                                <div class="flex gap-2">
+                                    <input id="blog-image" class="form-input" placeholder="Görsel Linki">
+                                    <input type="file" id="blog-image-file" class="hidden" accept="image/*">
+                                    <button type="button" onclick="document.getElementById('blog-image-file').click()" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Yükle</button>
+                                </div>
+                            </div>
+                            <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Okuma Süresi</label><input id="blog-readtime" class="form-input" placeholder="Örn: 5 dk"></div>
+                        </div>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Özet</label><input id="blog-summary" class="form-input"></div>
+                        <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">İçerik (HTML formatı destekler)</label><textarea id="blog-content" class="form-input h-48"></textarea></div>
+                        <div class="flex gap-2">
+                            <button id="save-blog" class="bg-brandGold text-brandDark px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white">Yazıyı Kaydet</button>
+                            <button id="cancel-blog-edit" class="hidden bg-neutral-800 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-neutral-700">İptal Et</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-brandCard p-6 rounded-2xl border border-neutral-900/60 space-y-4 shadow-lg">
+                        <h3 class="text-sm font-bold border-b border-neutral-900 pb-3 text-white">Mevcut Blog Yazıları</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-neutral-950/40 text-neutral-400 border-b border-neutral-900 font-bold uppercase tracking-wider text-[10px]">
+                                        <th class="p-3">Görsel</th>
+                                        <th class="p-3">Başlık</th>
+                                        <th class="p-3">Kategori</th>
+                                        <th class="p-3">Tarih</th>
+                                        <th class="p-3 text-right">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="blogs-table-body" class="divide-y divide-neutral-900/40 text-neutral-300">
+                                    <tr><td colspan="5" class="p-4 text-center text-neutral-500">Yükleniyor...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
-    <!-- ─── MOBIL INTERAKTIF SIDEBAR SCRIPTLERI ─── -->
+    <div id="toast-box" class="fixed bottom-6 right-6 z-[9999] px-5 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-2xl transition-all duration-300 translate-y-20 opacity-0 pointer-events-none"></div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const sidebar = document.getElementById("admin-sidebar");
@@ -422,7 +437,6 @@
             if(closeBtn) closeBtn.addEventListener("click", closeSidebar);
             if(overlay) overlay.addEventListener("click", closeSidebar);
 
-            // Menü linklerine tıklanınca mobilde sidebarı otomatik kapat
             const navLinks = document.querySelectorAll(".sidebar-link");
             navLinks.forEach(link => {
                 link.addEventListener("click", () => {

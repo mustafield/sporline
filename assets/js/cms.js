@@ -13,6 +13,39 @@
 
     let contentData = null;
 
+    // --- STRATEJİK JORDA AUDIO PLAYLIST MOTORU ---
+    let playlist = [];
+    let currentTrackIndex = 0;
+    let audioPlayer = new Audio();
+
+    const setupAudioPlaylist = (musics) => {
+        if (!musics || !Array.isArray(musics) || !musics.length) return;
+        
+        playlist = musics;
+        currentTrackIndex = 0;
+        
+        audioPlayer.src = playlist[currentTrackIndex];
+        audioPlayer.volume = 0.35; // Salon ambiyansı için ideal ses seviyesi
+        
+        // Şarkı bittiğinde tetiklenecek sihirli döngü olay dinleyicisi
+        audioPlayer.onended = () => {
+            currentTrackIndex++;
+            if (currentTrackIndex >= playlist.length) {
+                currentTrackIndex = 0; // Şarkılar bitince en başa sar
+            }
+            console.log(`[Sporline] Sıradaki fon müziğine geçiliyor index: ${currentTrackIndex}`);
+            audioPlayer.src = playlist[currentTrackIndex];
+            audioPlayer.play().catch(e => console.log("Otomatik oynatma engeli."));
+        };
+
+        // Kullanıcı tarayıcı kısıtlamasını aşsın diye ilk tıklamada müziği tetikle
+        document.body.addEventListener('click', () => {
+            if (audioPlayer.paused && currentTrackIndex === 0) {
+                audioPlayer.play().catch(err => console.log("Müzik çalma başlatılamadı."));
+            }
+        }, { once: true });
+    };
+
     const setText = (selector, value) => {
         const el = document.querySelector(selector);
         if (el && value) el.textContent = value;
@@ -35,371 +68,174 @@
         document.title = seo.title || document.title;
         setAttr('meta[name="description"]', 'content', seo.description);
         setAttr('meta[name="keywords"]', 'content', seo.keywords);
-        setAttr('meta[name="robots"]', 'content', seo.robots);
-        setAttr('link[rel="canonical"]', 'href', seo.canonical);
-        setAttr('meta[property="og:title"]', 'content', seo.title);
-        setAttr('meta[property="og:description"]', 'content', seo.description);
-        setAttr('meta[property="og:image"]', 'content', seo.ogImage);
-        setAttr('meta[property="og:url"]', 'content', seo.canonical);
-        setAttr('meta[name="twitter:title"]', 'content', seo.title);
-        setAttr('meta[name="twitter:description"]', 'content', seo.description);
-        setAttr('meta[name="twitter:image"]', 'content', seo.ogImage);
-
-        const schemaEl = document.getElementById('schema-json');
-        if (schemaEl && API.schema) {
-            fetch(API.schema).then(r => r.json()).then(res => {
-                if (res.success) schemaEl.textContent = JSON.stringify(res.data);
-            }).catch(() => {});
-        }
     };
 
-    const renderFeatures = (items) => {
-        const container = document.getElementById('features-grid');
-        if (!container || !items?.length) return;
-        container.innerHTML = items.map((item, i) => `
-            <article class="bg-brandCard dark:bg-brandCard light:bg-brandLightCard p-6 rounded-2xl border border-neutral-900 dark:border-neutral-900 light:border-brandLightBorder animated-card reveal-up" data-reveal>
-                <div class="text-brandGold font-heading text-2xl font-black mb-2">${String(i + 1).padStart(2, '0')}</div>
-                <h3 class="text-base font-bold font-heading uppercase text-white dark:text-white light:text-brandDark mb-1">${item.title}</h3>
-                <p class="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 font-light">${item.description}</p>
-            </article>
-        `).join('');
-    };
-
-    const renderPrograms = (data) => {
-        const container = document.getElementById('programs-grid');
-        if (!container || !data) return;
-        setText('#programlar-label', data.sectionLabel);
-        setText('#programlar-title', data.title);
-        if (!data.items?.length) return;
-        container.innerHTML = data.items.map(item => `
-            <article class="p-8 rounded-2xl bg-brandDark border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal">
-                <h3 class="text-lg font-bold font-heading text-white mb-2">${item.title || ''}</h3>
-                <p class="text-xs text-neutral-400 font-light leading-relaxed">${item.description || ''}</p>
-            </article>
-        `).join('');
-    };
-
-    const renderPaketler = (data) => {
-        const container = document.getElementById('paketler-grid');
-        if (!container || !data) return;
-        setText('#paketler-label', data.sectionLabel);
-        setText('#paketler-title', data.title);
-        if (!data.items?.length) return;
-        container.innerHTML = data.items.map((item, i) => `
-            <article class="package-card p-6 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal flex flex-col">
-                ${item.badge ? `<span class="text-[10px] font-bold uppercase tracking-wider text-brandGold mb-2">${item.badge}</span>` : ''}
-                <h3 class="text-base font-bold font-heading text-white uppercase mb-2">${item.isim || ''}</h3>
-                <p id="index-p${i + 1}" class="text-2xl font-black text-brandGold mb-4">${formatPrice(item.fiyat || 0)}</p>
-                <ul class="space-y-2 text-xs text-neutral-400 flex-1">${(item.features || []).map((f) => `<li>• ${f}</li>`).join('')}</ul>
-                <a href="#" class="package-whatsapp-btn mt-4 inline-flex items-center justify-center w-full py-3 rounded-xl bg-brandGold text-brandDark text-xs font-bold uppercase tracking-widest hover:bg-white transition">Paket Talebi</a>
-            </article>
-        `).join('');
-    };
-
-    const renderAthletes = (data) => {
-        const container = document.getElementById('athletes-grid');
-        if (!container || !data) return;
-        setText('#milli-sporcular-label', data.sectionLabel);
-        setText('#milli-sporcular-title', data.title);
-        if (!data.items?.length) return;
-        container.innerHTML = data.items.map((item) => `
-            <article class="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-brandCard/50 transition-all duration-500 hover:border-brandGold/40 gsap-reveal">
-                <div class="h-[400px] overflow-hidden relative">
-                    <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-brandDark/20 to-transparent z-10"></div>
-                    <img src="${item.image || ''}" alt="${item.name || 'Milli Sporcu'}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0">
-                    ${item.badge ? `<span class="absolute top-4 right-4 z-20 bg-brandGold text-brandDark font-mono font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">${item.badge}</span>` : ''}
-                </div>
-                <div class="p-6 relative z-20 -mt-10 bg-brandCard border-t border-neutral-900 rounded-b-2xl">
-                    <h3 class="text-lg font-bold font-heading text-white group-hover:text-brandGold transition">${item.name || ''}</h3>
-                    <p class="text-xs text-neutral-400 font-medium tracking-wide mb-2">${item.branch || ''}</p>
-                    <p class="text-xs text-neutral-500 font-light leading-relaxed">${item.detail || ''}</p>
-                </div>
-            </article>
-        `).join('');
-    };
-
-    const renderProducts = (data) => {
-        const container = document.getElementById('products-grid');
-        if (!container || !data) return;
-        setText('#urunler-label', data.sectionLabel);
-        setText('#urunler-title', data.title);
-        if (!data.items?.length) return;
-        container.innerHTML = data.items.map((item) => `
-            <article class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
-                ${item.badge ? `<div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">${item.badge}</div>` : ''}
-                <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
-                    <img src="${item.image || ''}" alt="${item.title || 'Ürün'}" class="h-full object-cover rounded-xl">
-                </div>
-                <div class="space-y-3">
-                    <h3 class="text-base font-bold font-heading text-white">${item.title || ''}</h3>
-                    <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
-                        <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">${item.subtitle || ''}</span>
-                        <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">${item.status || ''}</span>
-                    </div>
-                    <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
-                </div>
-            </article>
-        `).join('');
-    };
-
-    const renderSponsors = (data) => {
-        if (!data) return;
-        setText('#sponsorlar-label', data.sectionLabel);
-        setText('#sponsorlar-title', data.title);
-        setText('#sponsorlar-cta-title', data.ctaTitle);
-        setText('#sponsorlar-cta-text', data.ctaText);
-        const container = document.getElementById('sponsors-marquee');
-        if (!container || !data.items?.length) return;
-        const sorted = [...data.items].sort((a, b) => (a.order || 0) - (b.order || 0));
-        const names = sorted.map((item) => `
-            <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">${item.name || ''}</span>
-        `).join('');
-        container.innerHTML = names + names;
-    };
-
-    const renderNews = (data) => {
-        const container = document.getElementById('haberler-grid');
-        const factList = document.getElementById('haberler-facts');
-        const sidebarFactList = document.getElementById('sidebar-news-facts');
-        if (!container || !data) return;
-        setText('#haberler-label', data.sectionLabel);
-        setText('#haberler-title', data.title);
-        setText('#haberler-intro', data.intro);
-        setText('#sidebar-news-label', data.sectionLabel);
-        setText('#sidebar-news-title', data.title);
-        setText('#sidebar-news-intro', data.intro);
-        const factItems = (data.randomFacts || []).map(fact => `
-                <li class="text-[11px] text-neutral-400 leading-relaxed">${fact}</li>
-            `).join('');
-        if (factList) factList.innerHTML = factItems;
-        if (sidebarFactList) sidebarFactList.innerHTML = factItems;
+    const updateHero = (hero) => {
+        if (!hero) return;
+        setText('.hero-tagline', hero.tagline);
+        setText('.hero-title-1', hero.title1);
+        setText('.hero-title-2', hero.title2);
+        setText('.hero-description', hero.description);
+        setText('.hero-cta-1', hero.cta1);
+        setText('.hero-cta-2', hero.cta2);
         
-        if (!data.items?.length) {
-            container.innerHTML = '<p class="text-xs text-neutral-500">Henüz haber eklenmedi.</p>';
-            return;
-        }
-        container.innerHTML = data.items.map(item => `
-            <article class="bg-brandCard p-4 rounded-2xl border border-neutral-900 space-y-2">
-                <h4 class="text-sm font-bold uppercase text-white">${item.title}</h4>
-                <p class="text-[11px] text-neutral-400 leading-relaxed">${item.description}</p>
-            </article>
-        `).join('');
-    };
-
-    const renderFooterLinks = (links, containerId) => {
-        const container = document.getElementById(containerId);
-        if (!container || !links?.length) return;
-        container.innerHTML = links.sort((a, b) => a.order - b.order).map(link => `
-            <li><a href="${link.href}" class="footer-link nav-btn hover:text-brandGold transition duration-300">${link.label}</a></li>
-        `).join('');
-    };
-
-    const renderSocial = (items) => {
-        const container = document.getElementById('footer-social');
-        if (!container || !items?.length) return;
-
-        const icons = {
-            instagram: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 transition-transform duration-500 social-icon"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z"></path></svg>`,
-            whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M187.58,144.84l-24-12a8,8,0,0,0-8,1l-11.1,9.25a112.51,112.51,0,0,1-40.47-40.47l9.25-11.1a8,8,0,0,0-10-4.32l-24,9.6A8,8,0,0,0,64,72.4c0,61.53,50.07,111.6,111.6,111.6a8,8,0,0,0,7.16-4l9.6-24A8,8,0,0,0,187.58,144.84Z"></path></svg>`,
-            facebook: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,191.63V152h24a8,8,0,0,0,0-16H136V112a16,16,0,0,1,16-16h16a8,8,0,0,0,0-16H152a32,32,0,0,0-32,32v24H96a8,8,0,0,0,0,16h24v63.63a88,88,0,1,1,16,0Z"></path></svg>`,
-            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="z-10 social-icon"><path d="M164.44,121.34l-48-32A8,8,0,0,0,104,96v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,145.05V110.95L145.53,128Zm114-81.53v79.06a32,32,0,0,1-32,32H54a32,32,0,0,1-32-32V63.52a32,32,0,0,1,32-32h148a32,32,0,0,1,32,32Z"></path></svg>`
-        };
-
-        container.innerHTML = items.filter(s => s.isActive).map(s => `
-            <a href="${s.url}" target="_blank" rel="noopener noreferrer"
-               class="social-btn instagram-glow-btn w-12 h-12 rounded-xl bg-brandCard dark:bg-brandCard light:bg-white border border-neutral-800 dark:border-neutral-800 light:border-brandLightBorder flex items-center justify-center text-white dark:text-white light:text-brandDark relative overflow-hidden transition-all duration-300 shadow-lg"
-               aria-label="${s.platform} sayfamız">
-                ${icons[s.platform] || icons.instagram}
-                <div class="glow-layer absolute inset-0 opacity-0 transition-opacity duration-500 bg-gradient-to-tr from-brandGold via-ironRed to-ironRedGlow"></div>
-            </a>
-        `).join('');
-    };
-
-    const applyContent = (data) => {
-        if (!data) return;
-
-        const { hero, hakkimizda, programlar, paketler, iletisim, footer, seo, siteSettings } = data;
-
-        if (hero) {
-            setText('#hero-tag', hero.tagline);
-            setText('#hero-title-1', hero.titleLine1);
-            setText('#hero-title-2', hero.titleLine2);
-            setText('#hero-desc', hero.description);
-            setText('#hero-cta-primary', hero.ctaPrimary);
-            setText('#hero-cta-secondary', hero.ctaSecondary);
-            const video = document.getElementById('hero-video');
-            if (video && hero.videoUrl) {
-                const sources = video.querySelectorAll('source');
-                if (sources[0]) sources[0].src = hero.videoUrl;
-                if (sources[1] && hero.videoWebm) sources[1].src = hero.videoWebm;
-                video.load();
+        const videoEl = document.querySelector('.hero-video-src');
+        if (videoEl && hero.videoUrl && videoEl.getAttribute('src') !== hero.videoUrl) {
+            videoEl.setAttribute('src', hero.videoUrl);
+            const parentVideo = videoEl.parentElement;
+            if (parentVideo && typeof parentVideo.load === 'function') {
+                parentVideo.load();
+                parentVideo.play().catch(() => {});
             }
         }
+    };
 
-        if (data.ozellikler) renderFeatures(data.ozellikler);
+    const updateAbout = (about) => {
+        if (!about) return;
+        setText('.about-label', about.label);
+        setText('.about-title', about.title);
+        setText('.about-subtitle', about.subtitle);
+        setText('.about-p1', about.paragraph1);
+        setText('.about-p2', about.paragraph2);
+        if (about.imageUrl) setAttr('.about-image', 'src', about.imageUrl);
+    };
 
-        if (hakkimizda) {
-            setText('#hakkimizda-label', hakkimizda.sectionLabel);
-            setText('#hakkimizda-title', hakkimizda.title);
-            setText('#hakkimizda-subtitle', hakkimizda.subtitle);
-            setText('#hakkimizda-text1', hakkimizda.text1);
-            setText('#hakkimizda-text2', hakkimizda.text2);
-            const img = document.getElementById('hakkimizda-img');
-            if (img) {
-                if (hakkimizda.imageUrl) img.src = hakkimizda.imageUrl;
-                if (hakkimizda.imageAlt) img.alt = hakkimizda.imageAlt;
-            }
-        }
+    const updateMarquee = (news) => {
+        if (!news || !Array.isArray(news.items)) return;
+        const container = document.querySelector('.marquee-container');
+        if (!container) return;
+        container.innerHTML = news.items.map(item => `<span class="mx-4 font-medium text-xs tracking-wider uppercase">${item}</span>`).join('<span class="text-brandGold">•</span>');
+    };
 
-        if (data.haberler) renderNews(data.haberler);
-        if (data.milliSporcular) renderAthletes(data.milliSporcular);
-        if (programlar) renderPrograms(programlar);
-        if (paketler) renderPaketler(paketler);
-        if (data.urunler) renderProducts(data.urunler);
-        if (data.sponsorlar) renderSponsors(data.sponsorlar);
+    const updatePrograms = (prog) => {
+        if (!prog || !Array.isArray(prog.items)) return;
+        prog.items.forEach((item, index) => {
+            setText(`.prog-title-${index}`, item.title);
+            setText(`.prog-desc-${index}`, item.description);
+            if (item.imageUrl) setAttr(`.prog-img-${index}`, 'src', item.imageUrl);
+        });
+    };
 
-        if (iletisim) {
-            setText('#iletisim-label', iletisim.sectionLabel);
-            setText('#iletisim-title', iletisim.title);
-            setText('#iletisim-phone', iletisim.telefon);
-            setText('#iletisim-hours', iletisim.saatler);
-            setText('#footer-phone', iletisim.telefon);
-            setText('#footer-address', iletisim.adres);
-            const phoneLink = document.getElementById('iletisim-phone-link');
-            if (phoneLink) {
-                if (iletisim.whatsapp) {
-                    const defaultText = 'Merhaba Sporline Fitness, web sitenizdeki form aracılığıyla size ulaşıyorum.';
-                    const template = iletisim.whatsappMessageTemplate || defaultText;
-                    const whatsappText = template
-                        .replace('{name}', '')
-                        .replace('{phone}', '')
-                        .replace('{branch}', '')
-                        .replace('{message}', '');
-                    phoneLink.href = `https://wa.me/${iletisim.whatsapp}?text=${encodeURIComponent(whatsappText.trim())}`;
-                    phoneLink.setAttribute('aria-label', 'WhatsApp ile iletişim');
-                } else {
-                    phoneLink.href = `tel:${iletisim.telefonRaw || iletisim.telefon}`;
-                }
-            }
-            const map = document.getElementById('contact-map');
-            if (map && iletisim.mapEmbedUrl) map.src = iletisim.mapEmbedUrl;
-            const wa = document.getElementById('whatsapp-widget');
-            if (wa && iletisim.whatsapp) {
-                const defaultText = 'Merhaba Sporline Fitness, web sitenizdeki form aracılığıyla size ulaşıyorum.';
-                const template = iletisim.whatsappMessageTemplate || defaultText;
-                wa.href = `https://wa.me/${iletisim.whatsapp}?text=${encodeURIComponent(template)}`;
-            }
-            document.querySelectorAll('.package-whatsapp-btn').forEach((btn, idx) => {
-                if (!iletisim.whatsapp) return;
-                const packageTitle = btn.closest('.package-card')?.querySelector('h3')?.textContent?.trim() || `Paket ${idx + 1}`;
-                const packageText = `Merhaba Sporline Fitness, ${packageTitle} için bilgi almak istiyorum. Lütfen paket detaylarını paylaşır mısınız?`;
-                btn.href = `https://wa.me/${iletisim.whatsapp}?text=${encodeURIComponent(packageText)}`;
-                btn.setAttribute('target', '_blank');
-                btn.setAttribute('rel', 'noopener noreferrer');
-            });
+    const updatePrices = (pricing) => {
+        if (!pricing || !Array.isArray(pricing.items)) return;
+        pricing.items.forEach((item, index) => {
+            setText(`.price-title-${index}`, item.title);
+            setText(`.price-amt-${index}`, formatPrice(item.price));
+            setText(`.price-period-${index}`, item.period);
             
-            const sponsorBtn = document.getElementById('sponsor-whatsapp-btn');
-            if (sponsorBtn) {
-                if (iletisim.whatsapp) {
-                    const sponsorText = 'Merhaba Sporline Fitness, sponsorluk başvurusu yapmak istiyorum. Lütfen bilgi paylaşır mısınız?';
-                    sponsorBtn.href = `https://wa.me/${iletisim.whatsapp}?text=${encodeURIComponent(sponsorText)}`;
-                    sponsorBtn.setAttribute('target', '_blank');
-                    sponsorBtn.setAttribute('rel', 'noopener noreferrer');
-                } else if (iletisim.email) {
-                    sponsorBtn.href = `mailto:${iletisim.email}?subject=Sponsorluk%20Başvurusu`;
-                }
+            const listEl = document.querySelector(`.price-features-${index}`);
+            if (listEl && Array.isArray(item.features)) {
+                listEl.innerHTML = item.features.map(f => `
+                    <li class="flex items-center gap-3 text-neutral-400 text-xs">
+                        <svg class="w-3.5 h-3.5 text-brandGold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        <span>${f}</span>
+                    </li>`).join('');
             }
-            const branchSelect = document.getElementById('form-branch');
-            if (branchSelect && iletisim.formBranches?.length) {
-                branchSelect.innerHTML = iletisim.formBranches.map(b => `<option>${b}</option>`).join('');
-            }
-        }
-
-        if (footer) {
-            setText('#footer-tagline', footer.tagline);
-            setText('#footer-copyright', footer.copyright);
-            setText('#footer-powered', footer.poweredBy);
-            setText('#footer-phone', footer.phone);
-            setText('#footer-address', footer.address);
-            renderFooterLinks(footer.quickLinks, 'footer-quick-links');
-            renderFooterLinks(footer.legalLinks, 'footer-legal-links');
-        }
-
-        if (data.sosyalMedya) renderSocial(data.sosyalMedya);
-
-        if (siteSettings) {
-            setText('.logo-text', siteSettings.logoText);
-            setText('.logo-accent', siteSettings.logoAccent);
-        }
-
-        updateSEO(seo);
+        });
     };
 
-    const fetchContent = async () => {
-        const url = `${API.content}?t=${Date.now()}`;
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
-        if (!result.success) throw new Error('API success false döndü.');
-        return result.data;
+    const updateAthletes = (athletes) => {
+        if (!athletes || !Array.isArray(athletes.items)) return;
+        athletes.items.forEach((item, index) => {
+            setText(`.ath-name-${index}`, item.name);
+            setText(`.ath-title-${index}`, item.title);
+            if (item.imageUrl) setAttr(`.ath-img-${index}`, 'src', item.imageUrl);
+        });
     };
 
-    const loadContent = async () => {
+    const updateProducts = (shop) => {
+        if (!shop || !Array.isArray(shop.items)) return;
+        shop.items.forEach((item, index) => {
+            setText(`.prod-title-${index}`, item.title);
+            setText(`.prod-price-${index}`, formatPrice(item.price));
+            if (item.imageUrl) setAttr(`.prod-img-${index}`, 'src', item.imageUrl);
+        });
+    };
+
+    const updateSponsors = (spons) => {
+        if (!spons || !Array.isArray(spons.items)) return;
+        spons.items.forEach((item, index) => {
+            if (item.imageUrl) setAttr(`.spon-img-${index}`, 'src', item.imageUrl);
+        });
+    };
+
+    const updateContactInfo = (contact) => {
+        if (!contact) return;
+        setText('.info-phone', contact.phone);
+        setText('.info-email', contact.email);
+        setText('.info-address', contact.address);
+        setText('.info-hours', contact.hours);
+        if (contact.mapSrc) setAttr('.info-map', 'src', contact.mapSrc);
+    };
+
+    const updateSocialMedia = (social) => {
+        if (!social) return;
+        if (social.instagram) setAttr('.link-instagram', 'href', social.instagram);
+        if (social.whatsapp) setAttr('.link-whatsapp', 'href', social.whatsapp);
+        if (social.facebook) setAttr('.link-facebook', 'href', social.facebook);
+        if (social.youtube) setAttr('.link-youtube', 'href', social.youtube);
+    };
+
+    const updateFooterInfo = (footer) => {
+        if (!footer) return;
+        setText('.footer-copyright', footer.copyright);
+        setText('.footer-about', footer.aboutText);
+    };
+
+    const applyAllContent = (data) => {
+        updateSEO(data.seo);
+        updateHero(data.hero);
+        updateAbout(data.hakkimizda);
+        updateMarquee(data.haberler);
+        updatePrograms(data.programlar);
+        updatePrices(data.paketler);
+        updateAthletes(data.milliSporcular);
+        updateProducts(data.urunler);
+        updateSponsors(data.sponsorlar);
+        updateContactInfo(data.iletisim);
+        updateSocialMedia(data.sosyalMedya);
+        updateFooterInfo(data.footer);
+        
+        // Müzikleri Listeye Bağla (YENİ)
+        setupAudioPlaylist(data.musics);
+    };
+
+    const fetchLiveContent = async () => {
         try {
-            try {
-                contentData = await fetchContent();
-            } catch (firstErr) {
-                console.warn('CMS ilk istek başarısız, tekrar deneniyor...', firstErr);
-                await new Promise((r) => setTimeout(r, 1500));
-                contentData = await fetchContent();
+            const res = await fetch(API.content, { headers: { 'Cache-Control': 'no-cache' } });
+            const result = await res.json();
+            if (result.success && result.data) {
+                contentData = result.data;
+                applyAllContent(contentData);
             }
-            applyContent(contentData);
         } catch (err) {
-            console.error('CMS içerik sunucudan yüklenemedi:', err);
-            const fallback = config.fallbackWhatsApp || '';
-            contentData = {
-                iletisim: {
-                    whatsapp: fallback,
-                    isWhatsAppForm: true,
-                    whatsappMessageTemplate: "Merhaba Sporline Fitness, web sitenizdeki form aracılığıyla size ulaşıyorum.%0A%0A*İsim:* {name}%0A*Telefon:* {phone}%0A*Branş:* {branch}%0A*Mesaj:* {message}",
-                    telefon: '',
-                    telefonRaw: ''
-                }
-            };
-            applyContent(contentData);
+            console.error('Sporline CMS Canlı İçerik Çekme Hatası:', err);
         }
     };
 
-    const setupLiveUpdates = () => {
-        if (!window.EventSource || !API.contentStream) return;
+    const listenLiveStreamUpdates = () => {
+        if (!window.EventSource) return;
+        const source = new EventSource(API.contentStream);
+        
+        source.addEventListener('contentUpdated', (e) => {
+            try {
+                const updatedData = JSON.parse(e.data);
+                console.log('⚡ [Sporline Canlı CMS] İçerik anlık olarak güncellendi.');
+                contentData = updatedData;
+                applyAllContent(contentData);
+            } catch (err) {
+                console.error('SSE Akış Ayrıştırma Hatası:', err);
+            }
+        });
 
-        try {
-            const source = new EventSource(API.contentStream);
-            source.addEventListener('contentUpdated', (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data) {
-                        contentData = data;
-                        applyContent(contentData);
-                        showToast('Sitede yeni güncelleme var. İçerik yenilendi.', 'success');
-                    }
-                } catch (err) {
-                    console.warn('Canlı içerik güncellemesi işlenemedi.', err);
-                }
-            });
-
-            source.addEventListener('error', () => {
-                if (source.readyState === EventSource.CLOSED) {
-                    console.warn('Canlı güncelleme bağlantısı kapatıldı.');
-                }
-            });
-        } catch (e) {
-            console.warn("EventSource başlatılamadı:", e);
-        }
+        source.onerror = () => {
+            source.close();
+            setTimeout(listenLiveStreamUpdates, 5000);
+        };
     };
 
-    const setupVIPForm = () => {
-        const form = document.getElementById('vip-form');
+    const initContactForm = () => {
+        const form = document.getElementById('sporline-contact-form');
         if (!form) return;
 
         form.addEventListener('submit', async (e) => {
@@ -407,43 +243,32 @@
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = 'Gönderiliyor...';
+            btn.textContent = 'GÖNDERİLİYOR...';
 
-            const name = document.getElementById('form-name').value;
-            const phone = document.getElementById('form-phone').value;
-            const branch = document.getElementById('form-branch').value;
-            const message = document.getElementById('form-message') ? document.getElementById('form-message').value : '';
+            const payload = {
+                name: document.getElementById('form-name')?.value,
+                email: document.getElementById('form-email')?.value,
+                phone: document.getElementById('form-phone')?.value,
+                subject: document.getElementById('form-program')?.value,
+                message: document.getElementById('form-message')?.value
+            };
 
-            if (contentData?.iletisim?.whatsapp && contentData.iletisim.isWhatsAppForm) {
-                let whatsappMessage = contentData.iletisim.whatsappMessageTemplate || "Merhaba Sporline Fitness, web sitenizdeki form aracılığıyla size ulaşıyorum.%0A%0A*İsim:* {name}%0A*Telefon:* {phone}%0A*Branş:* {branch}%0A*Mesaj:* {message}";
-                whatsappMessage = whatsappMessage
-                    .replace('{name}', name)
-                    .replace('{phone}', phone)
-                    .replace('{branch}', branch)
-                    .replace('{message}', message);
-
-                window.open(`https://wa.me/${contentData.iletisim.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
-                form.reset();
-                showToast('Mesajınız WhatsApp üzerinden iletilmek üzere hazırlandı!', 'success');
-                btn.disabled = false;
-                btn.textContent = originalText;
-            } else {
-                try {
-                    const res = await fetch(API.contacts, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adSoyad: name, telefon: phone, brans: branch, mesaj: message })
-                    });
-                    const result = await res.json();
-                    if (result.success) {
-                        form.reset();
-                        showToast('VIP Başvurunuz başarıyla iletildi! En kısa sürede dönüş yapacağız.', 'success');
-                    } else {
-                        showToast(result.message || 'Bir hata oluştu.', 'error');
-                    }
-                } catch {
-                    showToast('Sunucu bağlantı hatası. Lütfen tekrar deneyin.', 'error');
+            try {
+                const res = await fetch(API.contacts, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Talebiniz başarıyla salonumuza ulaştı! En kısa sürede dönüş yapılacaktır.');
+                    form.reset();
+                } else {
+                    showToast(data.message || 'Bir hata oluştu.', 'error');
                 }
+            } catch (err) {
+                showToast('Sunucu bağlantı hatası. Lütfen tekrar deneyin.', 'error');
+            } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -472,11 +297,10 @@
         }, 4000);
     };
 
-    window.SporlineCMS = { loadContent, applyContent, showToast };
-
+    // --- BAŞLATICI ---
     document.addEventListener('DOMContentLoaded', () => {
-        loadContent();
-        setupVIPForm();
-        setupLiveUpdates();
+        fetchLiveContent();
+        listenLiveStreamUpdates();
+        initContactForm();
     });
 })();
