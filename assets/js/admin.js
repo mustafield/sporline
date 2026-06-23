@@ -12,19 +12,19 @@
 
     const esc = (value) => String(value ?? '')
         .replace(/&/g, '&amp;')
-        .replace(/\"/g, '&quot;')
+        .replace(/"/g, '&quot;')
         .replace(/</g, '&lt;');
 
     const authHeaders = () => ({
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {})\
     });
 
     const api = async (url, options = {}) => {
         try {
             const res = await fetch(url, { ...options, headers: { ...authHeaders(), ...options.headers } });
             
-            if (res.status === 401) { 
+            if (res.status === 401) { \
                 logout(); 
                 throw new Error('Oturum süresi doldu'); 
             }
@@ -38,70 +38,87 @@
     };
 
     const toast = (msg, type = 'success') => {
-        const box = $('#toast-box');
-        if (!box) return;
-        box.textContent = msg;
-        box.className = `fixed bottom-6 right-6 z-[9999] px-5 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-2xl transition-all duration-300 ${
-            type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-600 text-white'
+        let t = $('#admin-toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'admin-toast';
+            t.className = 'fixed bottom-6 right-6 z-[9999] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300 translate-y-10 opacity-0';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.className = `fixed bottom-6 right-6 z-[9999] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300 ${
+            type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
         }`;
-        box.style.transform = 'translateY(0)';
-        box.style.opacity = '1';
+        requestAnimationFrame(() => {
+            t.style.transform = 'translateY(0)';
+            t.style.opacity = '1';
+        });
         setTimeout(() => {
-            box.style.transform = 'translateY(20px)';
-            box.style.opacity = '0';
+            t.style.transform = 'translateY(10px)';
+            t.style.opacity = '0';
         }, 3500);
-    };
-
-    const checkAuth = async () => {
-        if (!token) {
-            showLogin(true);
-            return;
-        }
-        try {
-            const res = await api(`${API.auth}/me`);
-            if (res.success) {
-                currentUser = res.data;
-                showLogin(false);
-                $('#user-name').textContent = currentUser.name || 'Admin';
-                $('#user-avatar').textContent = String(currentUser.name || 'A').charAt(0);
-                initDashboard();
-            } else {
-                logout();
-            }
-        } catch (err) {
-            logout();
-        }
     };
 
     const showLogin = (visible) => {
         if (visible) {
             $('#login-screen').classList.remove('hidden');
             $('#admin-sidebar').classList.add('hidden');
+            $('#admin-main').classList.add('hidden');
         } else {
             $('#login-screen').classList.add('hidden');
             $('#admin-sidebar').classList.remove('hidden');
+            $('#admin-main').classList.remove('hidden');
+        }
+    };
+
+    const checkAuth = async () => {
+        if (!token) return showLogin(true);
+        try {
+            const res = await api(`${API.contacts}/me`); // Örnek auth check endpointi
+            if (res && res.user) {
+                currentUser = res.user;
+                $('#user-name').textContent = currentUser.name || 'Yönetici';
+                showLogin(false);
+                initDashboard();
+            } else {
+                logout();
+            }
+        } catch {
+            logout();
         }
     };
 
     const login = async (e) => {
         e.preventDefault();
-        const email = $('#login-email').value;
-        const password = $('#login-password').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Giriş Yapılıyor...';
+
+        const email = $('#login-email').value.trim();
+        const password = $('#login-password').value.trim();
+
         try {
-            const res = await api(`${API.auth}/login`, {
+            const res = await fetch(`${API.contacts}/login`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-            if (res.success) {
-                localStorage.setItem('sporline_token', res.token);
-                token = res.token;
-                toast('Giriş başarılı, yetkiler yüklendi.');
-                await checkAuth();
+            const data = await res.json();
+            
+            if (res.ok && data.token) {
+                localStorage.setItem('sporline_token', data.token);
+                token = data.token;
+                toast('Giriş başarılı, panel yükleniyor...');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                toast(res.message || 'Giriş başarısız', 'error');
+                toast(data.message || 'Giriş bilgileri hatalı', 'error');
             }
         } catch (err) {
-            toast('Sunucuya bağlanılamadı.', 'error');
+            toast('Sunucuyla bağlantı kurulamadı', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
     };
 
@@ -112,542 +129,427 @@
         showLogin(true);
     };
 
-    const switchPanel = (panelId) => {
-        $$('.admin-panel').forEach(p => p.classList.add('hidden'));
-        $$('.sidebar-link').forEach(l => l.classList.remove('active'));
-        
-        $(`#panel-${panelId}`)?.classList.remove('hidden');
-        $(`[data-panel="${panelId}"]`)?.classList.add('active');
+    const initDashboard = async () => {
+        try {
+            await loadContent();
+            await loadLeads();
+            switchPanel('hero');
+        } catch (err) {
+            toast('Veriler yüklenirken bir hata oluştu', 'error');
+        }
     };
 
-    const initDashboard = async () => {
-        await loadContent();
-        await loadLeads();
-        await loadBlogs();
+    const switchPanel = (panelId) => {
+        $$('.panel-content').forEach(p => p.classList.add('hidden'));
+        $$('.sidebar-link').forEach(l => l.classList.remove('bg-brandGray', 'text-brandGold'));
+        
+        $(`#panel-${panelId}`)?.classList.remove('hidden');
+        $(`[data-panel="${panelId}"]`)?.classList.add('bg-brandGray', 'text-brandGold');
+    };
+
+    const loadLeads = async () => {
+        try {
+            const data = await api(API.contacts);
+            const tbody = $('#leads-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 text-sm">Henüz başvuru bulunmuyor.</td></tr>`;
+                return;
+            }
+
+            data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(lead => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/[0.04] hover:bg-white/[0.01] transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 text-sm font-medium text-white">${esc(lead.name)}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${esc(lead.phone)}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${esc(lead.program || 'Belirtilmedi')}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${new Date(lead.createdAt).toLocaleDateString('tr-TR')}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <select onchange="Admin.updateLead('${lead._id}', this.value)" class="bg-brandDark border border-white/10 rounded-lg px-2 py-1 text-xs font-medium text-gray-300 focus:outline-none focus:border-brandGold transition-colors">
+                            <option value="Beklemede" ${lead.status === 'Beklemede' ? 'selected' : ''}>Beklemede</option>
+                            <option value="Arandı" ${lead.status === 'Arandı' ? 'selected' : ''}>Arandı</option>
+                            <option value="İptal" ${lead.status === 'İptal' ? 'selected' : ''}>İptal</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            console.error('Başvurular yüklenemedi:', err);
+        }
+    };
+
+    const updateLead = async (id, status) => {
+        try {
+            await api(`${API.contacts}/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            toast('Başvuru durumu güncellendi');
+        } catch {
+            toast('Durum güncellenirken hata oluştu', 'error');
+        }
     };
 
     const loadContent = async () => {
-        try {
-            const res = await api(API.content);
-            if (res.success && res.data) {
-                contentData = res.data;
-                renderContent();
-            }
-        } catch (err) {
-            toast('İçerik verileri yüklenemedi.', 'error');
-        }
+        contentData = await api(API.content);
+        fillForms();
     };
 
-    const renderContent = () => {
+    const fillForms = () => {
+        if (!contentData) return;
+
         // Hero
-        const hero = contentData.hero || {};
-        $('#hero-tagline').value = hero.tagline || '';
-        $('#hero-video').value = hero.videoUrl || '';
-        $('#hero-title1').value = hero.title1 || '';
-        $('#hero-title2').value = hero.title2 || '';
-        $('#hero-desc').value = hero.description || '';
-        $('#hero-cta1').value = hero.cta1 || '';
-        $('#hero-cta2').value = hero.cta2 || '';
+        if (contentData.hero) {
+            $('#hero-title').value = contentData.hero.title || '';
+            $('#hero-subtitle').value = contentData.hero.subtitle || '';
+            $('#hero-bg-preview').src = contentData.hero.bgImage || '';
+        }
 
         // About
-        const about = contentData.hakkimizda || {};
-        $('#about-label').value = about.label || '';
-        $('#about-title').value = about.title || '';
-        $('#about-subtitle').value = about.subtitle || '';
-        $('#about-text1').value = about.paragraph1 || '';
-        $('#about-text2').value = about.paragraph2 || '';
-        $('#about-image').value = about.imageUrl || '';
-
-        // Müzik Atamaları (YENİ)
-        if (contentData.musics && Array.isArray(contentData.musics)) {
-            $('#music-url-0').value = contentData.musics[0] || '';
-            $('#music-url-1').value = contentData.musics[1] || '';
-            $('#music-url-2').value = contentData.musics[2] || '';
+        if (contentData.about) {
+            $('#about-title').value = contentData.about.title || '';
+            $('#about-desc1').value = contentData.about.description1 || '';
+            $('#about-desc2').value = contentData.about.description2 || '';
+            $('#about-img-preview').src = contentData.about.image || '';
         }
 
-        // Marquee Duyurular
-        const news = contentData.haberler || {};
-        $('#news-text').value = Array.isArray(news.items) ? news.items.join('\n') : '';
+        // Musics
+        if (contentData.musics && Array.isArray(contentData.musics)) {
+            for (let i = 0; i < 3; i++) {
+                const m = contentData.musics[i] || {};
+                $(`#music-title-${i}`).value = m.title || '';
+                $(`#music-artist-${i}`).value = m.artist || '';
+                $(`#music-url-${i}`).value = m.url || '';
+            }
+        }
 
-        // Dinamik kart listeleri (Programlar, Paketler, Sporcular, Sponsorlar, Ürünler)
-        renderProgramsCard(contentData.programlar?.items || []);
-        renderPricesCard(contentData.paketler?.items || []);
-        renderAthletesCard(contentData.milliSporcular?.items || []);
-        renderProductsCard(contentData.urunler?.items || []);
-        renderSponsorsCard(contentData.sponsorlar?.items || []);
+        // News (Duyurular)
+        if (contentData.news) {
+            $('#news-text').value = contentData.news.text || '';
+            $('#news-active').checked = !!contentData.news.isActive;
+        }
 
-        // İletişim, Sosyal, Footer, SEO
-        const contact = contentData.iletisim || {};
-        $('#contact-phone').value = contact.phone || '';
-        $('#contact-email').value = contact.email || '';
-        $('#contact-address').value = contact.address || '';
-        $('#contact-mapsrc').value = contact.mapSrc || '';
-        $('#contact-hours').value = contact.hours || '';
+        // Prices
+        if (contentData.prices && Array.isArray(contentData.prices)) {
+            contentData.prices.forEach((p, idx) => {
+                $(`#price-title-${idx}`).value = p.title || '';
+                $(`#price-amt-${idx}`).value = p.amount || '';
+                $(`#price-period-${idx}`).value = p.period || '';
+                if (Array.isArray(p.features)) {
+                    $(`#price-feat-${idx}`).value = p.features.join('\n');
+                }
+            });
+        }
 
-        const social = contentData.sosyalMedya || {};
-        $('#social-instagram').value = social.instagram || '';
-        $('#social-whatsapp').value = social.whatsapp || '';
-        $('#social-facebook').value = social.facebook || '';
-        $('#social-youtube').value = social.youtube || '';
+        // Contact & Footer
+        if (contentData.contact) {
+            $('#contact-phone').value = contentData.contact.phone || '';
+            $('#contact-email').value = contentData.contact.email || '';
+            $('#contact-address').value = contentData.contact.address || '';
+            $('#contact-maps').value = contentData.contact.mapsUrl || '';
+        }
+        if (contentData.footer) {
+            $('#footer-text').value = contentData.footer.text || '';
+        }
 
-        const footer = contentData.footer || {};
-        $('#footer-copy').value = footer.copyright || '';
-        $('#footer-about').value = footer.aboutText || '';
+        // SEO
+        if (contentData.seo) {
+            $('#seo-title').value = contentData.seo.title || '';
+            $('#seo-desc').value = contentData.seo.description || '';
+            $('#seo-keys').value = contentData.seo.keywords || '';
+        }
 
-        const seo = contentData.seo || {};
-        $('#seo-title').value = seo.title || '';
-        $('#seo-desc').value = seo.description || '';
-        $('#seo-keywords').value = seo.keywords || '';
+        // Social Links
+        if (contentData.social) {
+            $('#soc-ig').value = contentData.social.instagram || '';
+            $('#soc-yt').value = contentData.social.youtube || '';
+            $('#soc-wp').value = contentData.social.whatsapp || '';
+        }
+
+        // Programlar, Sporcular, Ürünler, Sponsorlar ve Blog listeleri
+        renderArrayCards('programs', contentData.programs || [], ['title', 'subtitle', 'image']);
+        renderArrayCards('athletes', contentData.athletes || [], ['name', 'title', 'image']);
+        renderArrayCards('products', contentData.products || [], ['name', 'price', 'image', 'link']);
+        renderArrayCards('sponsors', contentData.sponsors || [], ['name', 'logo']);
+        renderBlogList(contentData.blogs || []);
     };
 
-    const handleFileUpload = async (fileInput, targetInputId) => {
-        const file = fileInput.files[0];
-        if (!file) return;
+    const renderArrayCards = (type, array, fields) => {
+        const container = $(`#${type}-container`);
+        if (!container) return;
+        container.innerHTML = '';
 
+        array.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'bg-brandDark border border-white/5 rounded-2xl p-6 relative group hover:border-brandGold/20 transition-all duration-300';
+            
+            let inputsHTML = '';
+            fields.forEach(field => {
+                if (field === 'image' || field === 'logo') {
+                    inputsHTML += `
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Görsel</label>
+                            <div class="flex items-center gap-4">
+                                <img id="${type}-preview-${index}" src="${item[field] || ''}" class="w-12 h-12 rounded-xl object-cover bg-brandGray border border-white/10 flex-shrink-0">
+                                <input type="file" onchange="Admin.handleCardUpload(this, '#${type}-img-${index}')" class="hidden" id="${type}-file-${index}">
+                                <label for="${type}-file-${index}" class="px-3 py-2 bg-brandGray hover:bg-white/[0.04] border border-white/10 rounded-xl text-xs font-medium text-gray-300 cursor-pointer transition-colors flex-1 text-center">Görsel Seç</label>
+                                <input type="hidden" id="${type}-img-${index}" value="${item[field] || ''}">
+                            </div>
+                        </div>
+                    `;
+                } else if (field === 'features') {
+                    inputsHTML += `
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Özellikler (Satır Satır)</label>
+                            <textarea data-field="${field}" class="w-full bg-brandGray border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandGold/40 transition-colors h-20">${Array.isArray(item[field]) ? item[field].join('\n') : ''}</textarea>
+                        </div>
+                    `;
+                } else {
+                    inputsHTML += `
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">${field === 'title' ? 'Başlık' : field === 'subtitle' ? 'Alt Başlık' : field === 'name' ? 'Adı' : field === 'price' ? 'Fiyat' : 'Link'}</label>
+                            <input type="text" data-field="${field}" value="${item[field] || ''}" class="w-full bg-brandGray border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandGold/40 transition-colors">
+                        </div>
+                    `;
+                }
+            });
+
+            card.innerHTML = `
+                <button type="button" onclick="this.closest('.group').remove()" class="absolute top-4 right-4 w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+                <div class="space-y-4 pt-4">${inputsHTML}</div>
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    const getArrayData = (type, fields) => {
+        const container = $(`#${type}-container`);
+        if (!container) return [];
+        const result = [];
+        
+        container.querySelectorAll('.group').forEach((card, index) => {
+            const item = {};
+            fields.forEach(field => {
+                if (field === 'image' || field === 'logo') {
+                    item[field] = card.querySelector(`[id^="${type}-img-"]`)?.value || '';
+                } else if (field === 'features') {
+                    const val = card.querySelector('textarea')?.value || '';
+                    item[field] = val.split('\n').map(x => x.trim()).filter(Boolean);
+                } else {
+                    const input = card.querySelector(`input[data-field="${field}"], textarea[data-field="${field}"]`);
+                    item[field] = input ? input.value.trim() : '';
+                }
+            });
+            result.push(item);
+        });
+        return result;
+    };
+
+    const handleFileUpload = async (input, targetId) => {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        
+        const previewImg = input.parentElement.querySelector('img');
+        const label = input.parentElement.querySelector('label');
+        const originalLabel = label.textContent;
+        
+        label.textContent = 'Yükleniyor...';
+        
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('image', file);
 
         try {
-            toast('Dosya yükleniyor, bekleyin...');
-            const res = await fetch(`${SportlineConfig.API_BASE}/api/upload`, {
+            const res = await fetch(`${API_BASE}/api/upload`, {
                 method: 'POST',
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
-                },
+                headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: formData
             });
             const data = await res.json();
-            if (data.success && data.url) {
-                $(`#${targetInputId}`).value = data.url;
-                toast('Dosya başarıyla yüklendi!');
+            if (res.ok && data.url) {
+                $(targetId).value = data.url;
+                if (previewImg) previewImg.src = data.url;
+                toast('Görsel başarıyla yüklendi');
             } else {
                 toast(data.message || 'Yükleme başarısız', 'error');
             }
-        } catch (err) {
-            toast('Dosya yükleme ağ hatası.', 'error');
+        } catch {
+            toast('Görsel yüklenirken sunucu hatası oluştu', 'error');
+        } finally {
+            label.textContent = originalLabel;
         }
     };
 
     const setupUploadListeners = () => {
-        $('#hero-video-file')?.addEventListener('change', function() { handleFileUpload(this, 'hero-video'); });
-        $('#about-image-file')?.addEventListener('change', function() { handleFileUpload(this, 'about-image'); });
-        $('#blog-image-file')?.addEventListener('change', function() { handleFileUpload(this, 'blog-image'); });
+        $('#hero-file')?.addEventListener('change', function() { handleFileUpload(this, '#hero-bg-url'); });
+        $('#about-file')?.addEventListener('change', function() { handleFileUpload(this, '#about-img-url'); });
+        $('#blog-file')?.addEventListener('change', function() { handleFileUpload(this, '#blog-img-url'); });
     };
 
-    // --- GLOBAL ORTAK KAYDETME MOTORU ---
-    const commitSectionUpdate = async (sectionName, payloadObject, buttonId) => {
-        const btn = $(`#${buttonId}`);
-        const orig = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'KAYDEDİLİYOR...';
+    const saveSection = async (section, data) => {
         try {
-            const res = await api(API.content, {
-                method: 'POST',
-                body: JSON.stringify({ [sectionName]: payloadObject })
+            await api(`${API.content}/${section}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
             });
-            if (res.success) {
-                toast('Değişiklikler başarıyla kaydedildi.');
-                await loadContent();
-            } else {
-                toast(res.message || 'Hata oluştu', 'error');
-            }
-        } catch (e) {
-            toast('Bağlantı hatası.', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = orig;
+            toast('Değişiklikler başarıyla kaydedildi');
+        } catch {
+            toast('Kaydedilirken bir hata oluştu', 'error');
         }
     };
 
-    const saveHero = () => {
-        commitSectionUpdate('hero', {
-            tagline: $('#hero-tagline').value,
-            videoUrl: $('#hero-video').value,
-            title1: $('#hero-title1').value,
-            title2: $('#hero-title2').value,
-            description: $('#hero-desc').value,
-            cta1: $('#hero-cta1').value,
-            cta2: $('#hero-cta2').value
-        }, 'save-hero');
-    };
-
-    const saveAbout = () => {
-        commitSectionUpdate('hakkimizda', {
-            label: $('#about-label').value,
-            title: $('#about-title').value,
-            subtitle: $('#about-subtitle').value,
-            paragraph1: $('#about-text1').value,
-            paragraph2: $('#about-text2').value,
-            imageUrl: $('#about-image').value
-        }, 'save-about');
-    };
+    const saveHero = () => saveSection('hero', { title: $('#hero-title').value, subtitle: $('#hero-subtitle').value, bgImage: $('#hero-bg-url').value });
+    const saveAbout = () => saveSection('about', { title: $('#about-title').value, description1: $('#about-desc1').value, description2: $('#about-desc2').value, image: $('#about-img-url').value });
+    const saveNews = () => saveSection('news', { text: $('#news-text').value, isActive: $('#news-active').checked });
+    const saveFooter = () => saveSection('footer', { text: $('#footer-text').value });
+    const saveSEO = () => saveSection('seo', { title: $('#seo-title').value, description: $('#seo-desc').value, keywords: $('#seo-keys').value });
+    const saveSocial = () => saveSection('social', { instagram: $('#soc-ig').value, youtube: $('#soc-yt').value, whatsapp: $('#soc-wp').value });
+    const savePrograms = () => saveSection('programs', getArrayData('programs', ['title', 'subtitle', 'image']));
+    const saveAthletes = () => saveSection('athletes', getArrayData('athletes', ['name', 'title', 'image']));
+    const saveProducts = () => saveSection('products', getArrayData('products', ['name', 'price', 'image', 'link']));
+    const saveSponsors = () => saveSection('sponsors', getArrayData('sponsors', ['name', 'logo']));
 
     const saveMusics = () => {
-        const musicsArray = [
-            $('#music-url-0').value.trim(),
-            $('#music-url-1').value.trim(),
-            $('#music-url-2').value.trim()
-        ].filter(u => u !== '');
-        commitSectionUpdate('musics', musicsArray, 'save-musics');
-    };
-
-    const saveNews = () => {
-        const lines = $('#news-text').value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        commitSectionUpdate('haberler', { items: lines }, 'save-news');
-    };
-
-    const saveContact = () => {
-        commitSectionUpdate('iletisim', {
-            phone: $('#contact-phone').value,
-            email: $('#contact-email').value,
-            address: $('#contact-address').value,
-            mapSrc: $('#contact-mapsrc').value,
-            hours: $('#contact-hours').value
-        }, 'save-contact');
-    };
-
-    const saveSocial = () => {
-        commitSectionUpdate('sosyalMedya', {
-            instagram: $('#social-instagram').value,
-            whatsapp: $('#social-whatsapp').value,
-            facebook: $('#social-facebook').value,
-            youtube: $('#social-youtube').value
-        }, 'save-social');
-    };
-
-    const saveFooter = () => {
-        commitSectionUpdate('footer', {
-            copyright: $('#footer-copy').value,
-            aboutText: $('#footer-about').value
-        }, 'save-footer');
-    };
-
-    const saveSEO = () => {
-        commitSectionUpdate('seo', {
-            title: $('#seo-title').value,
-            description: $('#seo-desc').value,
-            keywords: $('#seo-keywords').value
-        }, 'save-seo');
-    };
-
-    // --- DİNAMİK KART LİSTELERİ SİHİRBAZLARI ---
-    const renderProgramsCard = (items) => {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-            <div class="border border-neutral-900 bg-neutral-950/20 p-4 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-4 items-center" data-idx="${index}">
-                <div class="text-xs font-bold text-brandGold uppercase">Program #${index+1}</div>
-                <div><input class="form-input p-sub-title" value="${esc(item.title)}" placeholder="Başlık"></div>
-                <div><input class="form-input p-sub-desc" value="${esc(item.description)}" placeholder="Açıklama"></div>
-                <div>
-                    <div class="flex gap-1.5">
-                        <input class="form-input p-sub-img" id="prog-img-${index}" value="${esc(item.imageUrl)}" placeholder="Görsel URL">
-                        <input type="file" id="prog-file-${index}" class="hidden" accept="image/*" onchange="Admin.handleCardUpload(this, 'prog-img-${index}')">
-                        <button type="button" onclick="document.getElementById('prog-file-${index}').click()" class="bg-neutral-800 text-white px-2.5 rounded-lg text-[11px]">Yükle</button>
-                    </div>
-                </div>
-            </div>`;
-        });
-        $('#programs-container').innerHTML = html;
-    };
-
-    const savePrograms = () => {
-        const items = [];
-        $$('#programs-container > div').forEach(row => {
-            items.push({
-                title: row.querySelector('.p-sub-title').value,
-                description: row.querySelector('.p-sub-desc').value,
-                imageUrl: row.querySelector('.p-sub-img').value
-            });
-        });
-        commitSectionUpdate('programlar', { items }, 'save-programs');
-    };
-
-    const renderPricesCard = (items) => {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-            <div class="border border-neutral-900 bg-neutral-950/20 p-4 rounded-xl space-y-3">
-                <div class="text-xs font-bold text-brandGold uppercase">Paket #${index+1}</div>
-                <div><input class="form-input pr-title" value="${esc(item.title)}" placeholder="Paket Adı"></div>
-                <div><input class="form-input pr-price" value="${esc(item.price)}" placeholder="Fiyat"></div>
-                <div><input class="form-input pr-period" value="${esc(item.period)}" placeholder="Süre (Örn: / Aylık)"></div>
-                <div><textarea class="form-input h-20 pr-feat" placeholder="Özellikler (Her satıra bir tane)">${esc(Array.isArray(item.features)? item.features.join('\n'):'')}</textarea></div>
-                <div class="flex items-center gap-2"><input type="checkbox" class="pr-pop" ${item.popular?'checked':''}> <span class="text-xs">Popüler Paket</span></div>
-            </div>`;
-        });
-        $('#prices-container').innerHTML = html;
+        const musics = [];
+        for (let i = 0; i < 3; i++) {
+            musics.push({ title: $(`#music-title-${i}`).value, artist: $(`#music-artist-${i}`).value, url: $(`#music-url-${i}`).value });
+        }
+        saveSection('musics', musics);
     };
 
     const savePrices = () => {
-        const items = [];
-        $$('#prices-container > div').forEach(box => {
-            items.push({
-                title: box.querySelector('.pr-title').value,
-                price: box.querySelector('.pr-price').value,
-                period: box.querySelector('.pr-period').value,
-                features: box.querySelector('.pr-feat').value.split('\n').map(f=>f.trim()).filter(f=>f.length>0),
-                popular: box.querySelector('.pr-pop').checked
+        const prices = [];
+        for (let i = 0; i < 3; i++) {
+            prices.push({
+                title: $(`#price-title-${i}`).value,
+                amount: $(`#price-amt-${i}`).value,
+                period: $(`#price-period-${i}`).value,
+                features: $(`#price-feat-${i}`).value.split('\n').map(x => x.trim()).filter(Boolean)
             });
-        });
-        commitSectionUpdate('paketler', { items }, 'save-prices');
-    };
-
-    const renderAthletesCard = (items) => {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-            <div class="border border-neutral-900 bg-neutral-950/20 p-4 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                <div class="text-xs font-bold text-brandGold uppercase">Sporcu #${index+1}</div>
-                <div><input class="form-input ath-name" value="${esc(item.name)}" placeholder="Adı Soyadı"></div>
-                <div><input class="form-input ath-title" value="${esc(item.title)}" placeholder="Ünvan / Derece"></div>
-                <div>
-                    <div class="flex gap-1.5">
-                        <input class="form-input ath-img" id="ath-img-${index}" value="${esc(item.imageUrl)}" placeholder="Görsel URL">
-                        <input type="file" id="ath-file-${index}" class="hidden" accept="image/*" onchange="Admin.handleCardUpload(this, 'ath-img-${index}')">
-                        <button type="button" onclick="document.getElementById('ath-file-${index}').click()" class="bg-neutral-800 text-white px-2.5 rounded-lg text-[11px]">Yükle</button>
-                    </div>
-                </div>
-            </div>`;
-        });
-        $('#athletes-container').innerHTML = html;
-    };
-
-    const saveAthletes = () => {
-        const items = [];
-        $$('#athletes-container > div').forEach(row => {
-            items.push({
-                name: row.querySelector('.ath-name').value,
-                title: row.querySelector('.ath-title').value,
-                imageUrl: row.querySelector('.ath-img').value
-            });
-        });
-        commitSectionUpdate('milliSporcular', { items }, 'save-athletes');
-    };
-
-    const renderProductsCard = (items) => {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-            <div class="border border-neutral-900 bg-neutral-950/20 p-4 rounded-xl space-y-3">
-                <div class="text-xs font-bold text-brandGold uppercase">Ürün #${index+1}</div>
-                <div><input class="form-input prod-title" value="${esc(item.title)}" placeholder="Ürün Adı"></div>
-                <div><input class="form-input prod-price" value="${esc(item.price)}" placeholder="Fiyat (Sadece Sayı)"></div>
-                <div>
-                    <div class="flex gap-1.5">
-                        <input class="form-input prod-img" id="prod-img-${index}" value="${esc(item.imageUrl)}" placeholder="Görsel URL">
-                        <input type="file" id="prod-file-${index}" class="hidden" accept="image/*" onchange="Admin.handleCardUpload(this, 'prod-img-${index}')">
-                        <button type="button" onclick="document.getElementById('prod-file-${index}').click()" class="bg-neutral-800 text-white px-2.5 rounded-lg text-[11px]">Yükle</button>
-                    </div>
-                </div>
-            </div>`;
-        });
-        $('#products-container').innerHTML = html;
-    };
-
-    const saveProducts = () => {
-        const items = [];
-        $$('#products-container > div').forEach(box => {
-            items.push({
-                title: box.querySelector('.prod-title').value,
-                price: Number(box.querySelector('.prod-price').value || 0),
-                imageUrl: box.querySelector('.prod-img').value
-            });
-        });
-        commitSectionUpdate('urunler', { items }, 'save-products');
-    };
-
-    const renderSponsorsCard = (items) => {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-            <div class="border border-neutral-900 bg-neutral-950/20 p-3 rounded-xl space-y-2">
-                <div class="text-[10px] font-bold text-neutral-500 uppercase">Logo #${index+1}</div>
-                <div class="flex gap-1">
-                    <input class="form-input sp-img text-[10px]" id="spon-img-${index}" value="${esc(item.imageUrl)}" placeholder="Logo URL">
-                    <input type="file" id="spon-file-${index}" class="hidden" accept="image/*" onchange="Admin.handleCardUpload(this, 'spon-img-${index}')">
-                    <button type="button" onclick="document.getElementById('spon-file-${index}').click()" class="bg-neutral-800 text-white px-1.5 rounded-md text-[10px]">Seç</button>
-                </div>
-            </div>`;
-        });
-        $('#sponsors-container').innerHTML = html;
-    };
-
-    const saveSponsors = () => {
-        const items = [];
-        $$('#sponsors-container > div').forEach(box => {
-            items.push({ imageUrl: box.querySelector('.sp-img').value });
-        });
-        commitSectionUpdate('sponsorlar', { items }, 'save-sponsors');
-    };
-
-    // --- LEADS TALEP YÖNETİMİ ---
-    const loadLeads = async () => {
-        try {
-            const res = await api(SportlineConfig.API.contacts);
-            if (res.success && res.data) {
-                renderLeads(res.data);
-            }
-        } catch (e) {
-            console.error(e);
         }
+        saveSection('prices', prices);
     };
 
-    const renderLeads = (leads) => {
-        const tbody = $('#leads-table-body');
-        if (!leads.length) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-neutral-500">Kayıtlı istek bulunamadı.</td></tr>`;
+    const saveContact = () => {
+        saveSection('contact', {
+            phone: $('#contact-phone').value,
+            email: $('#contact-email').value,
+            address: $('#contact-address').value,
+            mapsUrl: $('#contact-maps').value
+        });
+    };
+
+    // ─── BLOG YÖNETİM MOTORU ───
+    let editingBlogId = null;
+
+    const renderBlogList = (blogs) => {
+        const grid = $('#blog-list-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        if (!blogs || blogs.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8 text-sm">Henüz blog yazısı eklenmemiş.</div>';
             return;
         }
-        let html = '';
-        leads.forEach(l => {
-            const dateStr = new Date(l.createdAt).toLocaleDateString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            html += `
-            <tr class="hover:bg-neutral-950/20 transition duration-150">
-                <td class="p-4 font-semibold text-white">${esc(l.name)}</td>
-                <td class="p-4 space-y-0.5">
-                    <div class="text-neutral-200">${esc(l.email)}</div>
-                    <div class="text-neutral-500 text-[11px]">${esc(l.phone)}</div>
-                </td>
-                <td class="p-4"><span class="bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-md text-[10px] font-bold text-brandGold uppercase">${esc(l.subject)}</span></td>
-                <td class="p-4 max-w-xs truncate" title="${esc(l.message)}">${esc(l.message)}</td>
-                <td class="p-4 text-neutral-400 text-[11px]">${dateStr}</td>
-                <td class="p-4 text-right">
-                    ${l.status === 'read' 
-                        ? `<span class="text-emerald-400 font-semibold text-[11px]">Okundu</span>`
-                        : `<button onclick="Admin.updateLead('${l._id}')" class="bg-brandGold text-brandDark px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-white">Okundu İşaretle</button>`
-                    }
-                </td>
-            </tr>`;
+
+        blogs.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(b => {
+            const card = document.createElement('div');
+            card.className = 'bg-brandDark border border-white/5 rounded-2xl p-5 flex gap-4 items-center group hover:border-brandGold/20 transition-all';
+            card.innerHTML = `
+                <img src="${b.image || ''}" class="w-16 h-16 rounded-xl object-cover bg-brandGray border border-white/5 flex-shrink-0">
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-sm font-medium text-white truncate">${esc(b.title)}</h4>
+                    <p class="text-xs text-gray-500 mt-1">${new Date(b.createdAt).toLocaleDateString('tr-TR')}</p>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" onclick="Admin.editBlog('${b._id}')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 flex items-center justify-center border border-white/10 transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                    <button type="button" onclick="Admin.editBlog('${b._id}')" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center border border-red-500/10 transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                </div>
+            `;
+            grid.appendChild(card);
         });
-        tbody.innerHTML = html;
-    };
-
-    const updateLead = async (id) => {
-        try {
-            const res = await api(`${SportlineConfig.API.contacts}/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: 'read' })
-            });
-            if (res.success) {
-                toast('Talep okundu olarak işaretlendi.');
-                loadLeads();
-            }
-        } catch (e) {
-            toast('İşlem başarısız.', 'error');
-        }
-    };
-
-    // --- BLOG MANAGEMENT (CRUD) ---
-    const loadBlogs = async () => {
-        try {
-            const res = await api(`${SportlineConfig.API_BASE}/api/blog`);
-            if (res.success && res.data) {
-                renderBlogsTable(res.data);
-            }
-        } catch (e) { console.error(e); }
-    };
-
-    const renderBlogsTable = (blogs) => {
-        const tbody = $('#blogs-table-body');
-        if(!blogs.length) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-neutral-500">Yazı bulunamadı.</td></tr>`;
-            return;
-        }
-        let html = '';
-        blogs.forEach(b => {
-            const d = new Date(b.createdAt).toLocaleDateString('tr-TR');
-            html += `
-            <tr class="hover:bg-neutral-950/20">
-                <td class="p-3"><img src="${esc(b.imageUrl)}" class="w-10 h-10 object-cover rounded-lg border border-neutral-900"></td>
-                <td class="p-3 font-semibold text-white max-w-xs truncate">${esc(b.title)}</td>
-                <td class="p-3 text-neutral-400">${esc(b.category)}</td>
-                <td class="p-3 text-neutral-500 text-[11px]">${d}</td>
-                <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
-                    <button onclick="Admin.editBlog('${b._id}')" class="text-brandGold hover:underline font-medium">Düzenle</button>
-                    <button onclick="Admin.deleteBlog('${b._id}')" class="text-red-500 hover:underline font-medium">Sil</button>
-                </td>
-            </tr>`;
-        });
-        tbody.innerHTML = html;
     };
 
     const saveBlog = async () => {
-        const id = $('#blog-id').value;
-        const payload = {
-            title: $('#blog-title').value,
-            category: $('#blog-category').value,
-            imageUrl: $('#blog-image').value,
-            readTime: $('#blog-readtime').value,
-            summary: $('#blog-summary').value,
-            content: $('#blog-content').value
-        };
+        const title = $('#blog-title').value.trim();
+        const content = $('#blog-content').value.trim();
+        const image = $('#blog-img-url').value;
 
-        const isEdit = id && id.length > 0;
-        const url = isEdit ? `${SportlineConfig.API_BASE}/api/blog/${id}` : `${SportlineConfig.API_BASE}/api/blog`;
-        const method = isEdit ? 'PUT' : 'POST';
+        if (!title || !content) return toast('Başlık ve içerik alanları zorunludur', 'error');
 
         try {
-            const res = await api(url, { method, body: JSON.stringify(payload) });
-            if(res.success) {
-                toast(isEdit ? 'Blog başarıyla güncellendi' : 'Yeni blog yazısı yayınlandı');
-                resetBlogForm();
-                loadBlogs();
+            if (editingBlogId) {
+                await api(`${API_BASE}/api/blogs/${editingBlogId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ title, content, image })
+                });
+                toast('Yazı güncellendi');
             } else {
-                toast(res.message || 'Başarısız', 'error');
+                await api(`${API_BASE}/api/blogs`, {
+                    method: 'POST',
+                    body: JSON.stringify({ title, content, image })
+                });
+                toast('Yeni blog yazısı yayınlandı');
             }
-        } catch(e) { toast('Blog kaydedilemedi.', 'error'); }
+            resetBlogForm();
+            loadContent(); // Listeyi yenile
+        } catch {
+            toast('Blog kaydedilirken hata oluştu', 'error');
+        }
     };
 
-    const editBlog = async (id) => {
-        try {
-            const res = await api(`${SportlineConfig.API_BASE}/api/blog/${id}`);
-            if(res.success && res.data) {
-                const b = res.data;
-                $('#blog-id').value = b._id;
-                $('#blog-title').value = b.title || '';
-                $('#blog-category').value = b.category || '';
-                $('#blog-image').value = b.imageUrl || '';
-                $('#blog-readtime').value = b.readTime || '';
-                $('#blog-summary').value = b.summary || '';
-                $('#blog-content').value = b.content || '';
-
-                $('#blog-form-title').textContent = 'Blog Yazısını Düzenle';
-                $('#cancel-blog-edit').classList.remove('hidden');
-                switchPanel('blog');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        } catch(e) { toast('Yazı detayları çekilemedi.', 'error'); }
+    const editBlog = (id) => {
+        const b = (contentData.blogs || []).find(x => x._id === id);
+        if (!b) return;
+        editingBlogId = id;
+        $('#blog-title').value = b.title || '';
+        $('#blog-content').value = b.content || '';
+        $('#blog-img-url').value = b.image || '';
+        $('#blog-img-preview').src = b.image || '';
+        $('#blog-form-title').textContent = 'Yazıyı Düzenle';
+        $('#cancel-blog-edit').classList.remove('hidden');
     };
 
     const deleteBlog = async (id) => {
-        if(!confirm('Bu blog yazısını kalıcı olarak silmek istediğinize emin misiniz?')) return;
+        if (!confirm('Bu blog yazısını silmek istediğinize emin misiniz?')) return;
         try {
-            const res = await api(`${SportlineConfig.API_BASE}/api/blog/${id}`, { method: 'DELETE' });
-            if(res.success) {
-                toast('Yazı silindi.');
-                loadBlogs();
-            }
-        } catch(e) { toast('Silme işlemi başarısız.', 'error'); }
+            await api(`${API_BASE}/api/blogs/${id}`, { method: 'DELETE' });
+            toast('Yazı başarıyla silindi');
+            loadContent();
+        } catch {
+            toast('Yazı silinirken hata oluştu', 'error');
+        }
     };
 
     const resetBlogForm = () => {
-        $('#blog-id').value = '';
+        editingBlogId = null;
         $('#blog-title').value = '';
-        $('#blog-category').value = '';
-        $('#blog-image').value = '';
-        $('#blog-readtime').value = '';
-        $('#blog-summary').value = '';
         $('#blog-content').value = '';
-        $('#blog-form-title').textContent = 'Yeni Blog Yazısı Ekle';
+        $('#blog-img-url').value = '';
+        $('#blog-img-preview').src = '';
+        $('#blog-form-title').textContent = 'Yeni Yazı Ekle';
         $('#cancel-blog-edit').classList.add('hidden');
     };
 
-    // --- EVENT LISTENERS INITIALIZATION ---
+    // ─── GÜVENLİ OLAY DİNLEYİCİ BAĞLAMA MOTORU ───
     document.addEventListener('DOMContentLoaded', () => {
-        $('#login-form')?.addEventListener('submit', login);
-        $('#logout-btn')?.addEventListener('click', logout);
+        // Giriş formu her şeyden bağımsız ilk önce bağlansın ki yarıda kesilmesin
+        const loginForm = $('#login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', login);
+        }
 
+        const logoutBtn = $('#logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', logout);
+        }
+
+        // Sidebar linkleri
         $$('.sidebar-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -655,21 +557,49 @@
             });
         });
 
-        $('#save-hero')?.addEventListener('click', saveHero);
-        $('#save-about')?.addEventListener('click', saveAbout);
-        $('#save-musics')?.addEventListener('click', saveMusics);
-        $('#save-news')?.addEventListener('click', saveNews);
-        $('#save-prices')?.addEventListener('click', savePrices);
-        $('#save-contact')?.addEventListener('click', saveContact);
-        $('#save-footer')?.addEventListener('click', saveFooter);
-        $('#save-seo')?.addEventListener('click', saveSEO);
-        $('#save-social')?.addEventListener('click', saveSocial);
-        $('#save-programs')?.addEventListener('click', savePrograms);
-        $('#save-athletes')?.addEventListener('click', saveAthletes);
-        $('#save-products')?.addEventListener('click', saveProducts);
-        $('#save-sponsors')?.addEventListener('click', saveSponsors);
-        $('#save-blog')?.addEventListener('click', saveBlog);
-        $('#cancel-blog-edit')?.addEventListener('click', resetBlogForm);
+        // Eleman yoksa script çökmesin diye dinamik korumalı bağlama (safeBind)
+        const safeBind = (id, fn) => {
+            const el = $(id);
+            if (el) el.addEventListener('click', fn);
+        };
+
+        safeBind('#save-hero', saveHero);
+        safeBind('#save-about', saveAbout);
+        safeBind('#save-musics', saveMusics);
+        safeBind('#save-news', saveNews);
+        safeBind('#save-prices', savePrices);
+        safeBind('#save-contact', saveContact);
+        safeBind('#save-footer', saveFooter);
+        safeBind('#save-seo', saveSEO);
+        safeBind('#save-social', saveSocial);
+        safeBind('#save-programs', savePrograms);
+        safeBind('#save-athletes', saveAthletes);
+        safeBind('#save-products', saveProducts);
+        safeBind('#save-sponsors', saveSponsors);
+        safeBind('#save-blog', saveBlog);
+        safeBind('#cancel-blog-edit', resetBlogForm);
+
+        // Dinamik yapı ekleme butonları (Gelecekte eklenirse diye hazır)
+        safeBind('#add-program-btn', () => {
+            const arr = getArrayData('programs', ['title', 'subtitle', 'image']);
+            arr.push({ title: '', subtitle: '', image: '' });
+            renderArrayCards('programs', arr, ['title', 'subtitle', 'image']);
+        });
+        safeBind('#add-athlete-btn', () => {
+            const arr = getArrayData('athletes', ['name', 'title', 'image']);
+            arr.push({ name: '', title: '', image: '' });
+            renderArrayCards('athletes', arr, ['name', 'title', 'image']);
+        });
+        safeBind('#add-product-btn', () => {
+            const arr = getArrayData('products', ['name', 'price', 'image', 'link']);
+            arr.push({ name: '', price: '', image: '', link: '' });
+            renderArrayCards('products', arr, ['name', 'price', 'image', 'link']);
+        });
+        safeBind('#add-sponsor-btn', () => {
+            const arr = getArrayData('sponsors', ['name', 'logo']);
+            arr.push({ name: '', logo: '' });
+            renderArrayCards('sponsors', arr, ['name', 'logo']);
+        });
 
         setupUploadListeners();
         checkAuth();
