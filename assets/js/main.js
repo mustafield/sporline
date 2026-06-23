@@ -72,9 +72,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elements.forEach(el => {
                     if (el.tagName === 'IMG') {
                         el.src = value;
-                    } else if (el.tagName === 'VIDEO' || el.tagName === 'SOURCE') {
-                        el.src = value;
-                        if(el.tagName === 'SOURCE') el.parentElement.load();
+                        } else if (el.tagName === 'VIDEO') {
+    el.src = value;
+    el.load();
+    el.play().catch(e => console.log("Video oynatma hatası:", e));
+} else if (el.tagName === 'SOURCE') {
+    el.src = value;
+    const videoParent = el.closest('video'); // En yakın video elementini güvenle bulur
+    if (videoParent) {
+        videoParent.load();
+        videoParent.play().catch(e => console.log("Video oynatma hatası:", e));
+    } 
                     } else {
                         // h1, p, span gibi metin alanlarını günceller
                         el.innerHTML = value; 
