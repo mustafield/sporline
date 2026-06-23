@@ -17,14 +17,14 @@
 
     const authHeaders = () => ({
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})\
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
     });
 
     const api = async (url, options = {}) => {
         try {
             const res = await fetch(url, { ...options, headers: { ...authHeaders(), ...options.headers } });
             
-            if (res.status === 401) { \
+            if (res.status === 401) { 
                 logout(); 
                 throw new Error('Oturum süresi doldu'); 
             }
@@ -74,7 +74,8 @@
     const checkAuth = async () => {
         if (!token) return showLogin(true);
         try {
-            const res = await api(`${API.contacts}/me`); // Örnek auth check endpointi
+            // ✅ DOĞRU ENDPOINT: API.auth altındaki /me rotasına çevrildi
+            const res = await api(`${API.auth}/me`); 
             if (res && res.user) {
                 currentUser = res.user;
                 $('#user-name').textContent = currentUser.name || 'Yönetici';
@@ -99,7 +100,8 @@
         const password = $('#login-password').value.trim();
 
         try {
-            const res = await fetch(`${API.contacts}/login`, {
+            // ✅ DOĞRU ENDPOINT: API.auth altındaki /login rotasına çevrildi (404 kilit kırıldı)
+            const res = await fetch(`${API.auth}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -270,7 +272,6 @@
             $('#soc-wp').value = contentData.social.whatsapp || '';
         }
 
-        // Programlar, Sporcular, Ürünler, Sponsorlar ve Blog listeleri
         renderArrayCards('programs', contentData.programs || [], ['title', 'subtitle', 'image']);
         renderArrayCards('athletes', contentData.athletes || [], ['name', 'title', 'image']);
         renderArrayCards('products', contentData.products || [], ['name', 'price', 'image', 'link']);
@@ -365,7 +366,7 @@
         formData.append('image', file);
 
         try {
-            const res = await fetch(`${API_BASE}/api/upload`, {
+            const res = await fetch(`${window.SportlineConfig.API_BASE}/api/upload`, {
                 method: 'POST',
                 headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: formData
@@ -444,7 +445,6 @@
         });
     };
 
-    // ─── BLOG YÖNETİM MOTORU ───
     let editingBlogId = null;
 
     const renderBlogList = (blogs) => {
@@ -468,7 +468,7 @@
                 </div>
                 <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button type="button" onclick="Admin.editBlog('${b._id}')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 flex items-center justify-center border border-white/10 transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                    <button type="button" onclick="Admin.editBlog('${b._id}')" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center border border-red-500/10 transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                    <button type="button" onclick="Admin.deleteBlog('${b._id}')" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center border border-red-500/10 transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                 </div>
             `;
             grid.appendChild(card);
@@ -484,20 +484,20 @@
 
         try {
             if (editingBlogId) {
-                await api(`${API_BASE}/api/blogs/${editingBlogId}`, {
+                await api(`${window.SportlineConfig.API_BASE}/api/blogs/${editingBlogId}`, {
                     method: 'PUT',
                     body: JSON.stringify({ title, content, image })
                 });
                 toast('Yazı güncellendi');
             } else {
-                await api(`${API_BASE}/api/blogs`, {
+                await api(`${window.SportlineConfig.API_BASE}/api/blogs`, {
                     method: 'POST',
                     body: JSON.stringify({ title, content, image })
                 });
                 toast('Yeni blog yazısı yayınlandı');
             }
             resetBlogForm();
-            loadContent(); // Listeyi yenile
+            loadContent();
         } catch {
             toast('Blog kaydedilirken hata oluştu', 'error');
         }
@@ -518,7 +518,7 @@
     const deleteBlog = async (id) => {
         if (!confirm('Bu blog yazısını silmek istediğinize emin misiniz?')) return;
         try {
-            await api(`${API_BASE}/api/blogs/${id}`, { method: 'DELETE' });
+            await api(`${window.SportlineConfig.API_BASE}/api/blogs/${id}`, { method: 'DELETE' });
             toast('Yazı başarıyla silindi');
             loadContent();
         } catch {
@@ -536,9 +536,7 @@
         $('#cancel-blog-edit').classList.add('hidden');
     };
 
-    // ─── GÜVENLİ OLAY DİNLEYİCİ BAĞLAMA MOTORU ───
     document.addEventListener('DOMContentLoaded', () => {
-        // Giriş formu her şeyden bağımsız ilk önce bağlansın ki yarıda kesilmesin
         const loginForm = $('#login-form');
         if (loginForm) {
             loginForm.addEventListener('submit', login);
@@ -549,7 +547,6 @@
             logoutBtn.addEventListener('click', logout);
         }
 
-        // Sidebar linkleri
         $$('.sidebar-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -557,7 +554,6 @@
             });
         });
 
-        // Eleman yoksa script çökmesin diye dinamik korumalı bağlama (safeBind)
         const safeBind = (id, fn) => {
             const el = $(id);
             if (el) el.addEventListener('click', fn);
@@ -579,7 +575,6 @@
         safeBind('#save-blog', saveBlog);
         safeBind('#cancel-blog-edit', resetBlogForm);
 
-        // Dinamik yapı ekleme butonları (Gelecekte eklenirse diye hazır)
         safeBind('#add-program-btn', () => {
             const arr = getArrayData('programs', ['title', 'subtitle', 'image']);
             arr.push({ title: '', subtitle: '', image: '' });
@@ -605,7 +600,6 @@
         checkAuth();
     });
 
-    // IIFE dışına güvenli export (Dinamik HTML element olayları için şart)
     window.Admin = { 
         updateLead, 
         editBlog, 
