@@ -4,10 +4,11 @@ const logger = require('../utils/logger');
 
 const CMS_SECTIONS = ['milliSporcular', 'urunler', 'sponsorlar'];
 
+// 🚨 GÜNCELLENDİ: Eğer veritabanında veri varsa, yanlış kontrolle üstüne boş default yazması engellendi.
 const mergeMissingSections = (content) => {
     const defaults = new Content().toObject();
     CMS_SECTIONS.forEach((key) => {
-        if (!content[key] || !content[key].items?.length) {
+        if (!content[key] || (content[key].items && !Array.isArray(content[key].items))) {
             content[key] = defaults[key];
         }
     });
@@ -62,34 +63,58 @@ exports.getContent = async (req, res, next) => {
     }
 };
 
+// 🚨 GÜNCELLENDİ: Sessizce 200 dönüp veriyi kaydetmeme kilitleri kırıldı, loglama eklendi.
 exports.updateContent = async (req, res, next) => {
     try {
         let content = await Content.findOne();
+
+        // Admin panelinden gelen body yapısını logla (Render terminalinde ne geldiğini görelim)
+        logger.info('Admin panelinden gelen istek gövdesi:', { 
+            gelenAlanlar: Object.keys(req.body || {}) 
+        });
 
         if (!content) {
             content = new Content(req.body);
         } else {
             const sections = ['hero', 'ozellikler', 'hakkimizda', 'haberler', 'milliSporcular', 'programlar', 'paketler', 'urunler', 'sponsorlar', 'iletisim', 'footer', 'menu', 'sosyalMedya', 'referanslar', 'hizmetler', 'slider', 'seo', 'siteSettings', 'custom'];
+            
+            let guncellenenSanalAlanSayisi = 0;
+            
             sections.forEach(section => {
                 if (req.body[section] !== undefined) {
                     content[section] = req.body[section];
                     content.markModified(section);
+                    guncellenenSanalAlanSayisi++;
                 }
             });
+
+            // Eğer hiçbir section eşleşmediyse, muhtemelen body sarmalanmadan direkt gelmiştir.
+            // Bu durumda body'nin kendisini doğrudan şemaya yediriyoruz.
+            if (guncellenenSanalAlanSayisi === 0) {
+                logger.warn('Uyuşan section bulunamadı, body doğrudan şemaya yediriliyor.');
+                Object.keys(req.body).forEach(key => {
+                    content[key] = req.body[key];
+                    content.markModified(key);
+                });
+            }
         }
 
-        await content.save();
+        // Veritabanına fiziksel yazma işlemi
+        const savedContent = await content.save();
+        
+        // Önbelleği temizle ve SSE ile tüm clientlara fırlat
         invalidateCache('content');
-        await broadcastContentUpdate(content.toObject());
+        await broadcastContentUpdate(savedContent.toObject());
 
-        logger.info('Site içeriği güncellendi', { user: req.user?.email });
+        logger.info('Site içeriği veritabanına başarıyla yazıldı.', { user: req.user?.email });
 
         res.status(200).json({
             success: true,
             message: 'İçerik başarıyla güncellendi.',
-            data: content
+            data: savedContent
         });
     } catch (err) {
+        logger.error('updateContent içinde hata meydana geldi:', { hata: err.message });
         next(err);
     }
 };
