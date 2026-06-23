@@ -46,3 +46,80 @@ const menuToggle = document.getElementById('menu-toggle');
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && menuToggle) menuToggle.checked = false;
 });
+ 
+// ─── MONGOODB'DEN CANLI VERİLERİ ÇEKİP SİTEYE BASAN SCRIPT ───
+document.addEventListener('DOMContentLoaded', async () => {
+    // config.js dosyasından Render API url'sini otomatik alıyoruz
+    const { API } = window.SportlineConfig || {};
+    if (!API || !API.content) {
+        console.error("CMS Hatası: API bağlantı ayarları yüklenemedi.");
+        return;
+    }
+
+    try {
+        // Render sunucusundan verileri çekiyoruz (Önbelleği kırmak için sonuna anlık zaman ekledik)
+        const res = await fetch(`${API.content}?t=${Date.now()}`);
+        const result = await res.json();
+
+        if (result && result.success) {
+            const content = result.data;
+            
+            // HTML elementlerini bulup içini dolduran yardımcı fonksiyon
+            const updateCmsElement = (key, value) => {
+                if (!value) return;
+                const elements = document.querySelectorAll(`[data-cms-key="${key}"]`);
+                
+                elements.forEach(el => {
+                    if (el.tagName === 'IMG') {
+                        el.src = value;
+                    } else if (el.tagName === 'VIDEO' || el.tagName === 'SOURCE') {
+                        el.src = value;
+                        if(el.tagName === 'SOURCE') el.parentElement.load();
+                    } else {
+                        // h1, p, span gibi metin alanlarını günceller
+                        el.innerHTML = value; 
+                    }
+                });
+            };
+
+            // 1. HERO BÖLÜMÜ GÜNCELLEMELERİ
+            if (content.hero) {
+                updateCmsElement('hero_tagline', content.hero.tagline);
+                updateCmsElement('hero_title1', content.hero.titleLine1);
+                updateCmsElement('hero_title2', content.hero.titleLine2);
+                updateCmsElement('hero_desc', content.hero.description);
+                updateCmsElement('hero_video', content.hero.videoUrl);
+                updateCmsElement('hero_cta1', content.hero.ctaPrimary);
+                updateCmsElement('hero_cta2', content.hero.ctaSecondary);
+            }
+
+            // 2. HAKKIMIZDA BÖLÜMÜ GÜNCELLEMELERİ
+            if (content.hakkimizda) {
+                updateCmsElement('about_label', content.hakkimizda.sectionLabel);
+                updateCmsElement('about_title', content.hakkimizda.title);
+                updateCmsElement('about_subtitle', content.hakkimizda.subtitle);
+                updateCmsElement('about_text1', content.hakkimizda.text1);
+                updateCmsElement('about_text2', content.hakkimizda.text2);
+                updateCmsElement('about_image', content.hakkimizda.imageUrl);
+            }
+
+            // 3. İLETİŞİM BÖLÜMÜ GÜNCELLEMELERİ
+            if (content.iletisim) {
+                updateCmsElement('contact_phone', content.iletisim.telefon);
+                updateCmsElement('contact_email', content.iletisim.email);
+                updateCmsElement('contact_address', content.iletisim.adres);
+                updateCmsElement('contact_hours', content.iletisim.saatler);
+            }
+
+            // 4. FOOTER BÖLÜMÜ GÜNCELLEMELERİ
+            if (content.footer) {
+                updateCmsElement('footer_tagline', content.footer.tagline);
+                updateCmsElement('footer_copyright', content.footer.copyright);
+            }
+
+            console.log("Sporline CMS: Canlı veriler başarıyla yüklendi.");
+        }
+    } catch (err) {
+        console.error("Canlı veri çekilirken hata oluştu:", err);
+    }
+});
