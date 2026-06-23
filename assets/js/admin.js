@@ -10,6 +10,11 @@
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
 
+    const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
+
     const authHeaders = () => ({
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -214,6 +219,23 @@
             setVal('social-instagram', ig?.url || '');
             setVal('social-whatsapp', wa?.url || '');
         }
+        if (c.milliSporcular) {
+            setVal('athletes-label', c.milliSporcular.sectionLabel);
+            setVal('athletes-title', c.milliSporcular.title);
+            renderAthleteEditor('athletes-editor', c.milliSporcular.items || []);
+        }
+        if (c.urunler) {
+            setVal('products-label', c.urunler.sectionLabel);
+            setVal('products-title', c.urunler.title);
+            renderProductEditor('products-editor', c.urunler.items || []);
+        }
+        if (c.sponsorlar) {
+            setVal('sponsors-label', c.sponsorlar.sectionLabel);
+            setVal('sponsors-title', c.sponsorlar.title);
+            setVal('sponsors-cta-title', c.sponsorlar.ctaTitle);
+            setVal('sponsors-cta-text', c.sponsorlar.ctaText);
+            setVal('sponsors-list', (c.sponsorlar.items || []).map((item) => item.name).join('\n'));
+        }
         renderCardEditor('programs-editor', c.programlar?.items || [], 'programlar');
     };
 
@@ -266,15 +288,51 @@
             <div class="card-item bg-brandDark p-4 rounded-xl border border-neutral-800 space-y-3" data-section="${sectionName}" data-index="${i}">
                 <div class="flex gap-4">
                     <div class="flex-1 space-y-2">
-                        <input type="text" class="card-title w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-sm" value="${item.title || ''}" placeholder="Başlık">
-                        <textarea class="card-desc w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-sm h-20" placeholder="Açıklama">${item.description || ''}</textarea>
+                        <input type="text" class="card-title w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-sm" value="${esc(item.title)}" placeholder="Başlık">
+                        <textarea class="card-desc w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-sm h-20" placeholder="Açıklama">${esc(item.description)}</textarea>
                     </div>
                     <div class="w-1/3 space-y-2">
-                        <input type="text" id="${sectionName}-img-${i}" class="card-img w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-[10px]" value="${item.image || ''}" placeholder="Resim URL">
+                        <input type="text" id="${sectionName}-img-${i}" class="card-img w-full bg-transparent border border-neutral-800 rounded-lg px-3 py-2 text-[10px]" value="${esc(item.image)}" placeholder="Resim URL">
                         <input type="file" id="${sectionName}-file-${i}" class="hidden" onchange="Admin.handleCardUpload(this, '${sectionName}-img-${i}')">
                         <button onclick="$('#${sectionName}-file-${i}').click()" class="w-full py-2 bg-neutral-800 rounded-lg text-xs hover:bg-neutral-700 transition">Fotoğraf Yükle</button>
                     </div>
                 </div>
+            </div>
+        `).join('');
+    };
+
+    const renderAthleteEditor = (containerId, items) => {
+        const container = $(`#${containerId}`);
+        if (!container) return;
+        container.innerHTML = items.map((item, i) => `
+            <div class="card-item bg-brandDark p-4 rounded-xl border border-neutral-800 space-y-3" data-section="milliSporcular">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" class="athlete-name form-input" value="${esc(item.name)}" placeholder="Ad Soyad">
+                    <input type="text" class="athlete-branch form-input" value="${esc(item.branch)}" placeholder="Branş">
+                    <input type="text" class="athlete-badge form-input" value="${esc(item.badge)}" placeholder="Rozet (ör. Avrupa Şampiyonu)">
+                    <input type="text" id="milliSporcular-img-${i}" class="athlete-img form-input" value="${esc(item.image)}" placeholder="Fotoğraf URL">
+                </div>
+                <textarea class="athlete-detail form-input h-20 resize-none" placeholder="Başarı detayı">${esc(item.detail)}</textarea>
+                <input type="file" id="milliSporcular-file-${i}" class="hidden" onchange="Admin.handleCardUpload(this, 'milliSporcular-img-${i}')">
+                <button onclick="$('#milliSporcular-file-${i}').click()" class="py-2 px-4 bg-neutral-800 rounded-lg text-xs hover:bg-neutral-700 transition">Fotoğraf Yükle</button>
+            </div>
+        `).join('');
+    };
+
+    const renderProductEditor = (containerId, items) => {
+        const container = $(`#${containerId}`);
+        if (!container) return;
+        container.innerHTML = items.map((item, i) => `
+            <div class="card-item bg-brandDark p-4 rounded-xl border border-neutral-800 space-y-3" data-section="urunler">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" class="product-title form-input" value="${esc(item.title)}" placeholder="Ürün Adı">
+                    <input type="text" class="product-badge form-input" value="${esc(item.badge)}" placeholder="Etiket (ör. Premium İzolasyon)">
+                    <input type="text" class="product-subtitle form-input" value="${esc(item.subtitle)}" placeholder="Alt Bilgi (ör. Şubeden Temin)">
+                    <input type="text" class="product-status form-input" value="${esc(item.status)}" placeholder="Durum (ör. YAKINDA SATIŞTA)">
+                    <input type="text" id="urunler-img-${i}" class="product-img form-input md:col-span-2" value="${esc(item.image)}" placeholder="Görsel URL">
+                </div>
+                <input type="file" id="urunler-file-${i}" class="hidden" onchange="Admin.handleCardUpload(this, 'urunler-img-${i}')">
+                <button onclick="$('#urunler-file-${i}').click()" class="py-2 px-4 bg-neutral-800 rounded-lg text-xs hover:bg-neutral-700 transition">Görsel Yükle</button>
             </div>
         `).join('');
     };
@@ -389,6 +447,56 @@
             image: el.querySelector('.card-img')?.value || ''
         }));
         saveSection('programlar', { ...contentData.programlar, items });
+    };
+
+    const saveAthletes = () => {
+        const items = [...$$('[data-section="milliSporcular"]')].map((el, i) => ({
+            name: el.querySelector('.athlete-name')?.value || '',
+            branch: el.querySelector('.athlete-branch')?.value || '',
+            detail: el.querySelector('.athlete-detail')?.value || '',
+            badge: el.querySelector('.athlete-badge')?.value || '',
+            image: el.querySelector('.athlete-img')?.value || '',
+            order: i + 1
+        }));
+        saveSection('milliSporcular', {
+            ...(contentData.milliSporcular || {}),
+            sectionLabel: $('#athletes-label')?.value || '',
+            title: $('#athletes-title')?.value || '',
+            items
+        });
+    };
+
+    const saveProducts = () => {
+        const items = [...$$('[data-section="urunler"]')].map((el, i) => ({
+            title: el.querySelector('.product-title')?.value || '',
+            badge: el.querySelector('.product-badge')?.value || '',
+            subtitle: el.querySelector('.product-subtitle')?.value || '',
+            status: el.querySelector('.product-status')?.value || '',
+            image: el.querySelector('.product-img')?.value || '',
+            order: i + 1
+        }));
+        saveSection('urunler', {
+            ...(contentData.urunler || {}),
+            sectionLabel: $('#products-label')?.value || '',
+            title: $('#products-title')?.value || '',
+            items
+        });
+    };
+
+    const saveSponsors = () => {
+        const items = ($('#sponsors-list')?.value || '')
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((name, i) => ({ name, order: i + 1 }));
+        saveSection('sponsorlar', {
+            ...(contentData.sponsorlar || {}),
+            sectionLabel: $('#sponsors-label')?.value || '',
+            title: $('#sponsors-title')?.value || '',
+            ctaTitle: $('#sponsors-cta-title')?.value || '',
+            ctaText: $('#sponsors-cta-text')?.value || '',
+            items
+        });
     };
 
     // ─── LEADS ───
@@ -568,6 +676,9 @@
         $('#save-seo')?.addEventListener('click', saveSEO);
         $('#save-social')?.addEventListener('click', saveSocial);
         $('#save-programs')?.addEventListener('click', savePrograms);
+        $('#save-athletes')?.addEventListener('click', saveAthletes);
+        $('#save-products')?.addEventListener('click', saveProducts);
+        $('#save-sponsors')?.addEventListener('click', saveSponsors);
         $('#save-blog')?.addEventListener('click', saveBlog);
 
         setupUploadListeners();

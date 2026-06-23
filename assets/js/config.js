@@ -14,7 +14,7 @@ window.SportlineConfig = {
         blog: `${API_BASE}/api/blog`,
         upload: `${API_BASE}/api/upload`,
         health: `${API_BASE}/api/health`,
-        schema: `${API_BASE}/api/schema`,
+        schema: `${API_BASE}/schema`,
         contentStream: `${API_BASE}/api/content/stream`
     },
     // Fallback WhatsApp number (uluslararası format, başında 0 veya + olmadan)

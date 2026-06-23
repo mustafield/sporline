@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const linkSchema = new mongoose.Schema({ label: { type: String, trim: true }, href: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
 const cardSchema = new mongoose.Schema({ title: { type: String, trim: true }, description: { type: String, trim: true }, image: { type: String, trim: true }, icon: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
 const paketSchema = new mongoose.Schema({ isim: { type: String, trim: true }, fiyat: Number, badge: { type: String, trim: true }, features: [{ type: String, trim: true }], order: { type: Number, default: 0 } }, { _id: false });
+const athleteSchema = new mongoose.Schema({ name: { type: String, trim: true }, branch: { type: String, trim: true }, detail: { type: String, trim: true }, badge: { type: String, trim: true }, image: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
+const productSchema = new mongoose.Schema({ title: { type: String, trim: true }, badge: { type: String, trim: true }, subtitle: { type: String, trim: true }, status: { type: String, trim: true }, image: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
+const sponsorItemSchema = new mongoose.Schema({ name: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
 
 const ContentSchema = new mongoose.Schema({
     hero: {
@@ -152,6 +155,47 @@ const ContentSchema = new mongoose.Schema({
             { platform: "instagram", url: "https://www.instagram.com/ildem_sporlinefitness_/", isActive: true },
             { platform: "whatsapp", url: "https://wa.me/905538103320", isActive: true }
         ]
+    },
+    milliSporcular: {
+        sectionLabel: { type: String, default: "ULUSLARARASI ARENADA BİZ", trim: true },
+        title: { type: String, default: "MİLLİ SPORCULARIMIZ", trim: true },
+        items: {
+            type: [athleteSchema],
+            default: [
+                { name: "Ahmet Yılmaz", branch: "IFBB Pro Bodybuilding", detail: "2025 IFBB Diamond Cup altın madalya sahibi, kulübümüzün baş antrenörlerinden.", badge: "Avrupa Şampiyonu", image: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600", order: 1 },
+                { name: "Zeynep Kaya", branch: "Milli Kick Boksör", detail: "WAKO Dünya Kick Boks Şampiyonası gümüş madalya sahibi, kadın boks ekolümüzün lideri.", badge: "Dünya 2.'si", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600", order: 2 },
+                { name: "Can Demir", branch: "Men's Physique Athlete", detail: "Gençler kategorisinde Balkan podyumunu domine ederek altın kupayı şehrimize getiren elit atlet.", badge: "Balkan Şampiyonu", image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600", order: 3 }
+            ]
+        }
+    },
+    urunler: {
+        sectionLabel: { type: String, default: "PREMIUM TAKVİYELER & EKOSİSTEM", trim: true },
+        title: { type: String, default: "SPORLINE NUTRITION", trim: true },
+        items: {
+            type: [productSchema],
+            default: [
+                { title: "Sporline ISO Whey Protein", badge: "Premium İzolasyon", subtitle: "Şubeden Temin", status: "YAKINDA SATIŞTA", image: "https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&q=80&w=400", order: 1 },
+                { title: "Pure Micronized Creatine", badge: "Maksimum Güç", subtitle: "200 MESH", status: "YAKINDA SATIŞTA", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400", order: 2 },
+                { title: "Pre-Workout Supreme V4", badge: "Yüksek Enerji", subtitle: "Focus & Pump", status: "YAKINDA SATIŞTA", image: "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?auto=format&fit=crop&q=80&w=400", order: 3 },
+                { title: "BCAA Advanced 4:1:1", badge: "Kas Koruma", subtitle: "Karpuz Aromalı", status: "YAKINDA SATIŞTA", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=400", order: 4 }
+            ]
+        }
+    },
+    sponsorlar: {
+        sectionLabel: { type: String, default: "GÜCÜMÜZE GÜÇ KATANLAR", trim: true },
+        title: { type: String, default: "KURUMSAL SPONSORLARIMIZ", trim: true },
+        ctaTitle: { type: String, default: "Sponsorumuz Olun, Zirvede Yer Alın", trim: true },
+        ctaText: { type: String, default: "Milli sporcularımıza destek olmak ve markanızı Kayseri'nin en elit spor topluluğu ile buluşturmak için sponsorluk ağımıza katılın.", trim: true },
+        items: {
+            type: [sponsorItemSchema],
+            default: [
+                { name: "VORTEX LABS", order: 1 },
+                { name: "NEXORA DIGITAL", order: 2 },
+                { name: "IRON ARMOR", order: 3 },
+                { name: "TITAN BUILD", order: 4 },
+                { name: "KAYSERİ TEKNOPARK", order: 5 }
+            ]
+        }
     },
     referanslar: {
         sectionLabel: { type: String, default: "BAŞARI HİKAYELERİ" },

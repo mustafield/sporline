@@ -2,15 +2,13 @@
  * Sporline CMS - Dynamic content loader
  */
 (function () {
-    // Render canlı backend ana adresi
-    const BASE_API_URL = "https://sporline.onrender.com";
-
-    // server.js rotalarına göre tam eşitleme yapıldı reis
-    const API = {
-        content: `${BASE_API_URL}/api/content`,
-        contentStream: `${BASE_API_URL}/api/content/stream`,
-        schema: `${BASE_API_URL}/schema`, // seoRoutes doğrudan '/' dizinine bağlı olduğu için /api kaldırıldı
-        contacts: `${BASE_API_URL}/api/contacts`
+    const config = window.SportlineConfig || {};
+    const API_BASE = config.API_BASE || 'https://sporline.onrender.com';
+    const API = config.API || {
+        content: `${API_BASE}/api/content`,
+        contentStream: `${API_BASE}/api/content/stream`,
+        schema: `${API_BASE}/schema`,
+        contacts: `${API_BASE}/api/contacts`
     };
 
     let contentData = null;
@@ -69,16 +67,94 @@
 
     const renderPrograms = (data) => {
         const container = document.getElementById('programs-grid');
-        if (!container) return;
+        if (!container || !data) return;
         setText('#programlar-label', data.sectionLabel);
         setText('#programlar-title', data.title);
         if (!data.items?.length) return;
         container.innerHTML = data.items.map(item => `
-            <article class="bg-brandCard dark:bg-brandCard light:bg-brandLightCard p-6 rounded-2xl border border-neutral-900 dark:border-neutral-900 light:border-brandLightBorder animated-card reveal-up" data-reveal>
-                <h3 class="text-lg font-bold font-heading text-white dark:text-white light:text-brandDark uppercase mb-2">${item.title}</h3>
-                <p class="text-xs text-neutral-400 dark:text-neutral-400 light:text-neutral-600 font-light leading-relaxed">${item.description}</p>
+            <article class="p-8 rounded-2xl bg-brandDark border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal">
+                <h3 class="text-lg font-bold font-heading text-white mb-2">${item.title || ''}</h3>
+                <p class="text-xs text-neutral-400 font-light leading-relaxed">${item.description || ''}</p>
             </article>
         `).join('');
+    };
+
+    const renderPaketler = (data) => {
+        const container = document.getElementById('paketler-grid');
+        if (!container || !data) return;
+        setText('#paketler-label', data.sectionLabel);
+        setText('#paketler-title', data.title);
+        if (!data.items?.length) return;
+        container.innerHTML = data.items.map((item, i) => `
+            <article class="package-card p-6 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal flex flex-col">
+                ${item.badge ? `<span class="text-[10px] font-bold uppercase tracking-wider text-brandGold mb-2">${item.badge}</span>` : ''}
+                <h3 class="text-base font-bold font-heading text-white uppercase mb-2">${item.isim || ''}</h3>
+                <p id="index-p${i + 1}" class="text-2xl font-black text-brandGold mb-4">${formatPrice(item.fiyat || 0)}</p>
+                <ul class="space-y-2 text-xs text-neutral-400 flex-1">${(item.features || []).map((f) => `<li>• ${f}</li>`).join('')}</ul>
+                <a href="#" class="package-whatsapp-btn mt-4 inline-flex items-center justify-center w-full py-3 rounded-xl bg-brandGold text-brandDark text-xs font-bold uppercase tracking-widest hover:bg-white transition">Paket Talebi</a>
+            </article>
+        `).join('');
+    };
+
+    const renderAthletes = (data) => {
+        const container = document.getElementById('athletes-grid');
+        if (!container || !data) return;
+        setText('#milli-sporcular-label', data.sectionLabel);
+        setText('#milli-sporcular-title', data.title);
+        if (!data.items?.length) return;
+        container.innerHTML = data.items.map((item) => `
+            <article class="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-brandCard/50 transition-all duration-500 hover:border-brandGold/40 gsap-reveal">
+                <div class="h-[400px] overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-brandDark/20 to-transparent z-10"></div>
+                    <img src="${item.image || ''}" alt="${item.name || 'Milli Sporcu'}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0">
+                    ${item.badge ? `<span class="absolute top-4 right-4 z-20 bg-brandGold text-brandDark font-mono font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">${item.badge}</span>` : ''}
+                </div>
+                <div class="p-6 relative z-20 -mt-10 bg-brandCard border-t border-neutral-900 rounded-b-2xl">
+                    <h3 class="text-lg font-bold font-heading text-white group-hover:text-brandGold transition">${item.name || ''}</h3>
+                    <p class="text-xs text-neutral-400 font-medium tracking-wide mb-2">${item.branch || ''}</p>
+                    <p class="text-xs text-neutral-500 font-light leading-relaxed">${item.detail || ''}</p>
+                </div>
+            </article>
+        `).join('');
+    };
+
+    const renderProducts = (data) => {
+        const container = document.getElementById('products-grid');
+        if (!container || !data) return;
+        setText('#urunler-label', data.sectionLabel);
+        setText('#urunler-title', data.title);
+        if (!data.items?.length) return;
+        container.innerHTML = data.items.map((item) => `
+            <article class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
+                ${item.badge ? `<div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">${item.badge}</div>` : ''}
+                <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
+                    <img src="${item.image || ''}" alt="${item.title || 'Ürün'}" class="h-full object-cover rounded-xl">
+                </div>
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold font-heading text-white">${item.title || ''}</h3>
+                    <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
+                        <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">${item.subtitle || ''}</span>
+                        <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">${item.status || ''}</span>
+                    </div>
+                    <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
+                </div>
+            </article>
+        `).join('');
+    };
+
+    const renderSponsors = (data) => {
+        if (!data) return;
+        setText('#sponsorlar-label', data.sectionLabel);
+        setText('#sponsorlar-title', data.title);
+        setText('#sponsorlar-cta-title', data.ctaTitle);
+        setText('#sponsorlar-cta-text', data.ctaText);
+        const container = document.getElementById('sponsors-marquee');
+        if (!container || !data.items?.length) return;
+        const sorted = [...data.items].sort((a, b) => (a.order || 0) - (b.order || 0));
+        const names = sorted.map((item) => `
+            <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">${item.name || ''}</span>
+        `).join('');
+        container.innerHTML = names + names;
     };
 
     const renderNews = (data) => {
@@ -176,18 +252,11 @@
         }
 
         if (data.haberler) renderNews(data.haberler);
+        if (data.milliSporcular) renderAthletes(data.milliSporcular);
         if (programlar) renderPrograms(programlar);
-
-        if (paketler) {
-            setText('#paketler-label', paketler.sectionLabel);
-            setText('#paketler-title', paketler.title);
-            ['paket1', 'paket2', 'paket3', 'paket4', 'paket5'].forEach((key, i) => {
-                const p = paketler[key];
-                if (!p) return;
-                const priceEl = document.getElementById(`index-p${i + 1}`);
-                if (priceEl) priceEl.textContent = formatPrice(p.fiyat);
-            });
-        }
+        if (paketler) renderPaketler(paketler);
+        if (data.urunler) renderProducts(data.urunler);
+        if (data.sponsorlar) renderSponsors(data.sponsorlar);
 
         if (iletisim) {
             setText('#iletisim-label', iletisim.sectionLabel);
@@ -222,7 +291,7 @@
             }
             document.querySelectorAll('.package-whatsapp-btn').forEach((btn, idx) => {
                 if (!iletisim.whatsapp) return;
-                const packageTitle = btn.closest('.package-card')?.querySelector('h3[data-cms-key$="_title"]')?.textContent || `Paket ${idx + 1}`;
+                const packageTitle = btn.closest('.package-card')?.querySelector('h3')?.textContent?.trim() || `Paket ${idx + 1}`;
                 const packageText = `Merhaba Sporline Fitness, ${packageTitle} için bilgi almak istiyorum. Lütfen paket detaylarını paylaşır mısınız?`;
                 btn.href = `https://wa.me/${iletisim.whatsapp}?text=${encodeURIComponent(packageText)}`;
                 btn.setAttribute('target', '_blank');
@@ -266,19 +335,28 @@
         updateSEO(seo);
     };
 
+    const fetchContent = async () => {
+        const url = `${API.content}?t=${Date.now()}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        if (!result.success) throw new Error('API success false döndü.');
+        return result.data;
+    };
+
     const loadContent = async () => {
         try {
-            const res = await fetch(API.content);
-            const result = await res.json();
-            if (result.success) {
-                contentData = result.data;
-                applyContent(contentData);
-            } else {
-                throw new Error("API success false döndü.");
+            try {
+                contentData = await fetchContent();
+            } catch (firstErr) {
+                console.warn('CMS ilk istek başarısız, tekrar deneniyor...', firstErr);
+                await new Promise((r) => setTimeout(r, 1500));
+                contentData = await fetchContent();
             }
+            applyContent(contentData);
         } catch (err) {
-            console.warn('CMS içerik sunucudan yüklenemedi, fallback moduna geçiliyor.');
-            const fallback = window.SporlineConfig && window.SporlineConfig.fallbackWhatsApp ? window.SporlineConfig.fallbackWhatsApp : '';
+            console.error('CMS içerik sunucudan yüklenemedi:', err);
+            const fallback = config.fallbackWhatsApp || '';
             contentData = {
                 iletisim: {
                     whatsapp: fallback,
