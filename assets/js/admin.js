@@ -1,8 +1,11 @@
 /**
- * Sporline Admin Panel v2.0 - Stabilized Edition
+ * Sporline Admin Panel v2.1 - Ultra Stabilized Edition
  */
 (function () {
-    const { API } = window.SportlineConfig || {};
+    const config = window.SportlineConfig || {};
+    const { API } = config;
+    const API_BASE = config.API_BASE || 'https://sporline.onrender.com';
+    
     let token = localStorage.getItem('sporline_token');
     let currentUser = null;
     let contentData = {};
@@ -74,7 +77,6 @@
     const checkAuth = async () => {
         if (!token) return showLogin(true);
         try {
-            // ✅ DOĞRU ENDPOINT: API.auth altındaki /me rotasına çevrildi
             const res = await api(`${API.auth}/me`); 
             if (res && res.user) {
                 currentUser = res.user;
@@ -92,6 +94,8 @@
     const login = async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button[type="submit"]');
+        if (!btn) return;
+        
         const originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = 'Giriş Yapılıyor...';
@@ -100,7 +104,6 @@
         const password = $('#login-password').value.trim();
 
         try {
-            // ✅ DOĞRU ENDPOINT: API.auth altındaki /login rotasına çevrildi (404 kilit kırıldı)
             const res = await fetch(`${API.auth}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -115,10 +118,12 @@
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 toast(data.message || 'Giriş bilgileri hatalı', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         } catch (err) {
+            console.error('Giriş Hatası:', err);
             toast('Sunucuyla bağlantı kurulamadı', 'error');
-        } finally {
             btn.disabled = false;
             btn.textContent = originalText;
         }
@@ -204,14 +209,12 @@
     const fillForms = () => {
         if (!contentData) return;
 
-        // Hero
         if (contentData.hero) {
             $('#hero-title').value = contentData.hero.title || '';
             $('#hero-subtitle').value = contentData.hero.subtitle || '';
             $('#hero-bg-preview').src = contentData.hero.bgImage || '';
         }
 
-        // About
         if (contentData.about) {
             $('#about-title').value = contentData.about.title || '';
             $('#about-desc1').value = contentData.about.description1 || '';
@@ -219,7 +222,6 @@
             $('#about-img-preview').src = contentData.about.image || '';
         }
 
-        // Musics
         if (contentData.musics && Array.isArray(contentData.musics)) {
             for (let i = 0; i < 3; i++) {
                 const m = contentData.musics[i] || {};
@@ -229,13 +231,11 @@
             }
         }
 
-        // News (Duyurular)
         if (contentData.news) {
             $('#news-text').value = contentData.news.text || '';
             $('#news-active').checked = !!contentData.news.isActive;
         }
 
-        // Prices
         if (contentData.prices && Array.isArray(contentData.prices)) {
             contentData.prices.forEach((p, idx) => {
                 $(`#price-title-${idx}`).value = p.title || '';
@@ -247,7 +247,6 @@
             });
         }
 
-        // Contact & Footer
         if (contentData.contact) {
             $('#contact-phone').value = contentData.contact.phone || '';
             $('#contact-email').value = contentData.contact.email || '';
@@ -258,14 +257,12 @@
             $('#footer-text').value = contentData.footer.text || '';
         }
 
-        // SEO
         if (contentData.seo) {
             $('#seo-title').value = contentData.seo.title || '';
             $('#seo-desc').value = contentData.seo.description || '';
             $('#seo-keys').value = contentData.seo.keywords || '';
         }
 
-        // Social Links
         if (contentData.social) {
             $('#soc-ig').value = contentData.social.instagram || '';
             $('#soc-yt').value = contentData.social.youtube || '';
@@ -334,7 +331,7 @@
         if (!container) return [];
         const result = [];
         
-        container.querySelectorAll('.group').forEach((card, index) => {
+        container.querySelectorAll('.group').forEach((card) => {
             const item = {};
             fields.forEach(field => {
                 if (field === 'image' || field === 'logo') {
@@ -366,7 +363,7 @@
         formData.append('image', file);
 
         try {
-            const res = await fetch(`${window.SportlineConfig.API_BASE}/api/upload`, {
+            const res = await fetch(`${API_BASE}/api/upload`, {
                 method: 'POST',
                 headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: formData
@@ -484,13 +481,13 @@
 
         try {
             if (editingBlogId) {
-                await api(`${window.SportlineConfig.API_BASE}/api/blogs/${editingBlogId}`, {
+                await api(`${API_BASE}/api/blogs/${editingBlogId}`, {
                     method: 'PUT',
                     body: JSON.stringify({ title, content, image })
                 });
                 toast('Yazı güncellendi');
             } else {
-                await api(`${window.SportlineConfig.API_BASE}/api/blogs`, {
+                await api(`${API_BASE}/api/blogs`, {
                     method: 'POST',
                     body: JSON.stringify({ title, content, image })
                 });
@@ -518,7 +515,7 @@
     const deleteBlog = async (id) => {
         if (!confirm('Bu blog yazısını silmek istediğinize emin misiniz?')) return;
         try {
-            await api(`${window.SportlineConfig.API_BASE}/api/blogs/${id}`, { method: 'DELETE' });
+            await api(`${API_BASE}/api/blogs/${id}`, { method: 'DELETE' });
             toast('Yazı başarıyla silindi');
             loadContent();
         } catch {
