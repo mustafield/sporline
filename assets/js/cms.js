@@ -2,16 +2,15 @@
  * Sporline CMS - Dynamic content loader
  */
 (function () {
-    // Render canlı backend adresi
-    // Eğer Express tarafında endpoint'ler app.get('/api/content') şeklindeyse '/api' kalmalı.
-    // Eğer app.get('/content') şeklindeyse sondaki '/api' kısmını silerek test edebilirsin reis.
-    const BASE_API_URL = "https://sporline.onrender.com/api";
+    // Render canlı backend ana adresi
+    const BASE_API_URL = "https://sporline.onrender.com";
 
+    // server.js rotalarına göre tam eşitleme yapıldı reis
     const API = {
-        content: `${BASE_API_URL}/content`,
-        contentStream: `${BASE_API_URL}/content/stream`,
-        schema: `${BASE_API_URL}/schema`,
-        contacts: `${BASE_API_URL}/contacts`
+        content: `${BASE_API_URL}/api/content`,
+        contentStream: `${BASE_API_URL}/api/content/stream`,
+        schema: `${BASE_API_URL}/schema`, // seoRoutes doğrudan '/' dizinine bağlı olduğu için /api kaldırıldı
+        contacts: `${BASE_API_URL}/api/contacts`
     };
 
     let contentData = null;
@@ -294,7 +293,6 @@
     };
 
     const setupLiveUpdates = () => {
-        // API.contentStream tanımsızsa veya EventSource desteklenmiyorsa sessizce çıkarak çökmeyi engeller.
         if (!window.EventSource || !API.contentStream) return;
 
         try {
