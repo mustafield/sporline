@@ -267,34 +267,76 @@
         <section id="milli-sporcular" class="py-24 relative bg-brandDark overflow-hidden border-t border-neutral-900">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="text-center max-w-3xl mx-auto mb-16 space-y-3 gsap-reveal">
-                    <span id="milli-sporcular-label" class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">ULUSLARARASI ARENADA BİZ</span>
-                    <h2 id="milli-sporcular-title" class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">MİLLİ SPORCULARIMIZ</h2>
+                    <span class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">ULUSLARARASI ARENADA BİZ</span>
+                    <h2 class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">MİLLİ SPORCULARIMIZ</h2>
                     <div class="w-20 h-[2px] bg-brandGold mx-auto"></div>
                 </div>
-                <div id="athletes-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-brandCard/50 transition-all duration-500 hover:border-brandGold/40 gsap-reveal">
+                        <div class="h-[400px] overflow-hidden relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-brandDark/20 to-transparent z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600" alt="Milli Sporcu" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" data-cms-key="athlete_1_image">
+                            <span class="absolute top-4 right-4 z-20 bg-brandGold text-brandDark font-mono font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider" data-cms-key="athlete_1_badge">Avrupa Şampiyonu</span>
+                        </div>
+                        <div class="p-6 relative z-20 -mt-10 bg-brandCard border-t border-neutral-900 rounded-b-2xl">
+                            <h3 class="text-lg font-bold font-heading text-white group-hover:text-brandGold transition" data-cms-key="athlete_1_name">Ahmet Yılmaz</h3>
+                            <p class="text-xs text-neutral-400 font-medium tracking-wide mb-2" data-cms-key="athlete_1_branch">IFBB Pro Bodybuilding</p>
+                            <p class="text-xs text-neutral-500 font-light leading-relaxed" data-cms-key="athlete_1_detail">2025 IFBB Diamond Cup altın madalya sahibi, kulübümüzün baş antrenörlerinden.</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-brandCard/50 transition-all duration-500 hover:border-brandGold/40 gsap-reveal">
+                        <div class="h-[400px] overflow-hidden relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-brandDark/20 to-transparent z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600" alt="Milli Sporcu" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" data-cms-key="athlete_2_image">
+                            <span class="absolute top-4 right-4 z-20 bg-brandGold text-brandDark font-mono font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider" data-cms-key="athlete_2_badge">Dünya 2.'si</span>
+                        </div>
+                        <div class="p-6 relative z-20 -mt-10 bg-brandCard border-t border-neutral-900 rounded-b-2xl">
+                            <h3 class="text-lg font-bold font-heading text-white group-hover:text-brandGold transition" data-cms-key="athlete_2_name">Zeynep Kaya</h3>
+                            <p class="text-xs text-neutral-400 font-medium tracking-wide mb-2" data-cms-key="athlete_2_branch">Milli Kick Boksör</p>
+                            <p class="text-xs text-neutral-500 font-light leading-relaxed" data-cms-key="athlete_2_detail">WAKO Dünya Kick Boks Şampiyonası gümüş madalya sahibi, kadın boks ekolümüzün lideri.</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-brandCard/50 transition-all duration-500 hover:border-brandGold/40 gsap-reveal">
+                        <div class="h-[400px] overflow-hidden relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-brandDark/20 to-transparent z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600" alt="Milli Sporcu" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" data-cms-key="athlete_3_image">
+                            <span class="absolute top-4 right-4 z-20 bg-brandGold text-brandDark font-mono font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider" data-cms-key="athlete_3_badge">Balkan Şampiyonu</span>
+                        </div>
+                        <div class="p-6 relative z-20 -mt-10 bg-brandCard border-t border-neutral-900 rounded-b-2xl">
+                            <h3 class="text-lg font-bold font-heading text-white group-hover:text-brandGold transition" data-cms-key="athlete_3_name">Can Demir</h3>
+                            <p class="text-xs text-neutral-400 font-medium tracking-wide mb-2" data-cms-key="athlete_3_branch">Men's Physique Athlete</p>
+                            <p class="text-xs text-neutral-500 font-light leading-relaxed" data-cms-key="athlete_3_detail">Gençler kategorisinde Balkan podyumunu domine ederek altın kupayı şehrimize getiren elit atlet.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="programlar" class="py-24 bg-brandCard/50 relative">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-2xl mx-auto mb-16 space-y-3 gsap-reveal">
-                    <span id="programlar-label" class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">ODAK ALANLARIMIZ</span>
-                    <h2 id="programlar-title" class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">BRANŞLAR & AKADEMİ</h2>
+                    <span class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">ODAK ALANLARIMIZ</span>
+                    <h2 class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">BRANŞLAR & AKADEMİ</h2>
                     <div class="w-20 h-[2px] bg-brandGold mx-auto"></div>
                 </div>
 
-                <div id="programs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-            </div>
-        </section>
-
-        <section id="paketler" class="py-24 bg-brandDark border-t border-neutral-900">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-2xl mx-auto mb-16 space-y-3 gsap-reveal">
-                    <span id="paketler-label" class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">YATIRIMINI KENDİNE YAP</span>
-                    <h2 id="paketler-title" class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">ÜYELİK PAKETLERİ</h2>
-                    <div class="w-20 h-[2px] bg-brandGold mx-auto"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-8 rounded-2xl bg-brandDark border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal">
+                        <h3 class="text-lg font-bold font-heading text-white mb-2" data-cms-key="branch_1_title">Fitness & Bodybuilding</h3>
+                        <p class="text-xs text-neutral-400 font-light leading-relaxed" data-cms-key="branch_1_desc">Kişiye özel hipertrofi ve yağ yakımı protokolleri ile anatomik potansiyelinizi ortaya çıkarın.</p>
+                    </div>
+                    <div class="p-8 rounded-2xl bg-brandDark border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal">
+                        <h3 class="text-lg font-bold font-heading text-white mb-2" data-cms-key="branch_2_title">Fight Club Academy</h3>
+                        <p class="text-xs text-neutral-400 font-light leading-relaxed" data-cms-key="branch_2_desc">Profesyonel ringlerde tecrübeli hocalar eşliğinde boks ve kick boks eğitimleri.</p>
+                    </div>
+                    <div class="p-8 rounded-2xl bg-brandDark border border-neutral-900 hover:border-brandGold/30 transition duration-300 gsap-reveal">
+                        <h3 class="text-lg font-bold font-heading text-white mb-2" data-cms-key="branch_3_title">Kadınlara Özel Alan</h3>
+                        <p class="text-xs text-neutral-400 font-light leading-relaxed" data-cms-key="branch_3_desc">Tamamen izole, konforlu ve hedefe yönelik fonksiyonel antrenman alanı.</p>
+                    </div>
                 </div>
-                <div id="paketler-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"></div>
             </div>
         </section>
 
@@ -302,31 +344,104 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4 gsap-reveal">
                     <div class="space-y-3 text-left">
-                        <span id="urunler-label" class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">PREMIUM TAKVİYELER & EKOSİSTEM</span>
-                        <h2 id="urunler-title" class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">SPORLINE NUTRITION</h2>
+                        <span class="text-xs font-bold uppercase tracking-[0.3em] text-brandGold">PREMIUM TAKVİYELER & EKOSİSTEM</span>
+                        <h2 class="text-3xl sm:text-4xl font-black font-heading uppercase text-white">SPORLINE NUTRITION</h2>
                         <div class="w-20 h-[2px] bg-brandGold"></div>
                     </div>
                 </div>
-                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
+                        <div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">Premium İzolasyon</div>
+                        <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&q=80&w=400" alt="Product" class="h-full object-cover rounded-xl" data-cms-key="product_1_image">
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold font-heading text-white" data-cms-key="product_1_title">Sporline ISO Whey Protein</h3>
+                            <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
+                                <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">Şubeden Temin</span>
+                                <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">YAKINDA SATIŞTA</span>
+                            </div>
+                            <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
+                        <div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">Maksimum Güç</div>
+                        <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400" alt="Product" class="h-full object-cover rounded-xl" data-cms-key="product_2_image">
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold font-heading text-white" data-cms-key="product_2_title">Pure Micronized Creatine</h3>
+                            <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
+                                <span class="text-xs font-mono text-neutral-500 tracking-wider">200 MESH</span>
+                                <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">YAKINDA SATIŞTA</span>
+                            </div>
+                            <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
+                        <div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">Yüksek Enerji</div>
+                        <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1593079831268-3381b0db4a77?auto=format&fit=crop&q=80&w=400" alt="Product" class="h-full object-cover rounded-xl" data-cms-key="product_3_image">
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold font-heading text-white" data-cms-key="product_3_title">Pre-Workout Supreme V4</h3>
+                            <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
+                                <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">Focus & Pump</span>
+                                <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">YAKINDA SATIŞTA</span>
+                            </div>
+                            <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-brandCard border border-neutral-900 rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-brandGold/5 gsap-reveal package-card">
+                        <div class="absolute top-4 left-4 bg-neutral-900 border border-neutral-800 text-[9px] font-mono tracking-widest text-brandGold px-3 py-1 rounded-full uppercase">Kas Koruma</div>
+                        <div class="h-56 w-full flex items-center justify-center my-4 transition-transform duration-500 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=400" alt="Product" class="h-full object-cover rounded-xl" data-cms-key="product_4_image">
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-base font-bold font-heading text-white" data-cms-key="product_4_title">BCAA Advanced 4:1:1</h3>
+                            <div class="flex justify-between items-center pt-2 border-t border-neutral-900">
+                                <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">Karpuz Aromalı</span>
+                                <span class="text-xs font-bold text-brandGold bg-brandGold/10 border border-brandGold/20 px-3 py-1 rounded-lg">YAKINDA SATIŞTA</span>
+                            </div>
+                            <a href="#iletisim" class="package-whatsapp-btn inline-flex items-center justify-center w-full bg-brandGold text-brandDark py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition duration-300">Paket Talebi</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="sponsorlar" class="py-20 relative overflow-hidden bg-[#050505]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="text-center max-w-2xl mx-auto mb-12 space-y-2 gsap-reveal">
-                    <span id="sponsorlar-label" class="text-xs font-bold uppercase tracking-[0.2em] text-brandGold">GÜCÜMÜZE GÜÇ KATANLAR</span>
-                    <h3 id="sponsorlar-title" class="text-xl font-bold font-heading uppercase text-white">KURUMSAL SPONSORLARIMIZ</h3>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-brandGold">GÜCÜMÜZE GÜÇ KATANLAR</span>
+                    <h3 class="text-xl font-bold font-heading uppercase text-white">KURUMSAL SPONSORLARIMIZ</h3>
                 </div>
 
                 <div class="w-full overflow-hidden relative py-6 border-t border-b border-neutral-900/40 select-none gsap-reveal">
-                    <div id="sponsors-marquee" class="animate-marquee gap-16 items-center whitespace-nowrap"></div>
+                    <div class="animate-marquee gap-16 items-center whitespace-nowrap">
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">VORTEX LABS</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">NEXORA DIGITAL</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">IRON ARMOR</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">TITAN BUILD</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">KAYSERİ TEKNOPARK</span>
+                        
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">VORTEX LABS</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">NEXORA DIGITAL</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">IRON ARMOR</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">TITAN BUILD</span>
+                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">KAYSERİ TEKNOPARK</span>
+                    </div>
                 </div>
 
                 <div class="mt-16 max-w-4xl mx-auto bg-brandCard border border-neutral-900 p-8 sm:p-12 rounded-3xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl gsap-reveal">
                     <div class="absolute top-0 right-0 w-72 h-72 bg-brandGold/5 rounded-full blur-[80px] pointer-events-none"></div>
                     <div class="space-y-3 text-center md:text-left">
-                        <h4 id="sponsorlar-cta-title" class="text-xl font-bold font-heading text-white uppercase">Sponsorumuz Olun, Zirvede Yer Alın</h4>
-                        <p id="sponsorlar-cta-text" class="text-xs text-neutral-400 font-light max-w-lg leading-relaxed">
+                        <h4 class="text-xl font-bold font-heading text-white uppercase">Sponsorumuz Olun, Zirvede Yer Alın</h4>
+                        <p class="text-xs text-neutral-400 font-light max-w-lg leading-relaxed">
                             Milli sporcularımıza destek olmak og markanızı Kayseri'nin en elit spor topluluğu ile buluşturmak için sponsorluk ağımıza katılın.
                         </p>
                     </div>
