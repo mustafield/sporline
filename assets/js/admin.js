@@ -1,5 +1,5 @@
 /**
- * Sporline Admin Panel v2.1 - Ultra Stabilized Edition
+ * Sporline Admin Panel v2.2 - Failure-Proof Edition
  */
 (function () {
     const config = window.SportlineConfig || {};
@@ -57,30 +57,34 @@
             t.style.opacity = '1';
         });
         setTimeout(() => {
-            t.style.transform = 'translateY(10px)';
-            t.style.opacity = '0';
+            if (t) {
+                t.style.transform = 'translateY(10px)';
+                t.style.opacity = '0';
+            }
         }, 3500);
     };
 
     const showLogin = (visible) => {
         if (visible) {
-            $('#login-screen').classList.remove('hidden');
-            $('#admin-sidebar').classList.add('hidden');
-            $('#admin-main').classList.add('hidden');
+            $('#login-screen')?.classList.remove('hidden');
+            $('#admin-sidebar')?.classList.add('hidden');
+            $('#admin-main')?.classList.add('hidden');
         } else {
-            $('#login-screen').classList.add('hidden');
-            $('#admin-sidebar').classList.remove('hidden');
-            $('#admin-main').classList.remove('hidden');
+            $('#login-screen')?.classList.add('hidden');
+            $('#admin-sidebar')?.classList.remove('hidden');
+            $('#admin-main')?.classList.remove('hidden');
         }
     };
 
     const checkAuth = async () => {
         if (!token) return showLogin(true);
         try {
+            if (!API || !API.auth) return showLogin(true);
             const res = await api(`${API.auth}/me`); 
             if (res && res.user) {
                 currentUser = res.user;
-                $('#user-name').textContent = currentUser.name || 'Yönetici';
+                const nameEl = $('#user-name');
+                if (nameEl) nameEl.textContent = currentUser.name || 'Yönetici';
                 showLogin(false);
                 initDashboard();
             } else {
@@ -100,30 +104,40 @@
         btn.disabled = true;
         btn.textContent = 'Giriş Yapılıyor...';
 
-        const email = $('#login-email').value.trim();
-        const password = $('#login-password').value.trim();
+        const email = $('#login-email')?.value.trim() || '';
+        const password = $('#login-password')?.value.trim() || '';
 
         try {
-            const res = await fetch(`${API.auth}/login`, {
+            const loginUrl = (API && API.auth) ? `${API.auth}/login` : `${API_BASE}/api/auth/login`;
+            console.log("İstek atılan adres:", loginUrl);
+
+            const res = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-            const data = await res.json();
+            
+            let data = {};
+            try {
+                data = await res.json();
+            } catch (jsonErr) {
+                console.error("JSON Parse Hatası:", jsonErr);
+            }
             
             if (res.ok && data.token) {
                 localStorage.setItem('sporline_token', data.token);
                 token = data.token;
                 toast('Giriş başarılı, panel yükleniyor...');
                 setTimeout(() => window.location.reload(), 1000);
+                return; // Başarılıysa butonu açmaya gerek yok sayfa yenilenecek
             } else {
-                toast(data.message || 'Giriş bilgileri hatalı', 'error');
-                btn.disabled = false;
-                btn.textContent = originalText;
+                toast(data.message || 'Giriş bilgileri hatalı veya sunucu hatası (Durum: ' + res.status + ')', 'error');
             }
         } catch (err) {
-            console.error('Giriş Hatası:', err);
-            toast('Sunucuyla bağlantı kurulamadı', 'error');
+            console.error('Giriş Fonksiyonu Çöktü:', err);
+            toast('Sunucuyla bağlantı kurulamadı veya kod çöktü!', 'error');
+        } finally {
+            // Hata ne olursa olsun buton kilitlenmeyecek, serbest kalacak!
             btn.disabled = false;
             btn.textContent = originalText;
         }
@@ -156,6 +170,7 @@
 
     const loadLeads = async () => {
         try {
+            if (!API || !API.contacts) return;
             const data = await api(API.contacts);
             const tbody = $('#leads-tbody');
             if (!tbody) return;
@@ -191,6 +206,7 @@
 
     const updateLead = async (id, status) => {
         try {
+            if (!API || !API.contacts) return;
             await api(`${API.contacts}/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ status })
@@ -202,71 +218,76 @@
     };
 
     const loadContent = async () => {
-        contentData = await api(API.content);
-        fillForms();
+        try {
+            if (!API || !API.content) return;
+            contentData = await api(API.content);
+            fillForms();
+        } catch (err) {
+            console.error("İçerik yüklenemedi:", err);
+        }
     };
 
     const fillForms = () => {
         if (!contentData) return;
 
         if (contentData.hero) {
-            $('#hero-title').value = contentData.hero.title || '';
-            $('#hero-subtitle').value = contentData.hero.subtitle || '';
-            $('#hero-bg-preview').src = contentData.hero.bgImage || '';
+            if($('#hero-title')) $('#hero-title').value = contentData.hero.title || '';
+            if($('#hero-subtitle')) $('#hero-subtitle').value = contentData.hero.subtitle || '';
+            if($('#hero-bg-preview')) $('#hero-bg-preview').src = contentData.hero.bgImage || '';
         }
 
         if (contentData.about) {
-            $('#about-title').value = contentData.about.title || '';
-            $('#about-desc1').value = contentData.about.description1 || '';
-            $('#about-desc2').value = contentData.about.description2 || '';
-            $('#about-img-preview').src = contentData.about.image || '';
+            if($('#about-title')) $('#about-title').value = contentData.about.title || '';
+            if($('#about-desc1')) $('#about-desc1').value = contentData.about.description1 || '';
+            if($('#about-desc2')) $('#about-desc2').value = contentData.about.description2 || '';
+            if($('#about-img-preview')) $('#about-img-preview').src = contentData.about.image || '';
         }
 
         if (contentData.musics && Array.isArray(contentData.musics)) {
             for (let i = 0; i < 3; i++) {
                 const m = contentData.musics[i] || {};
-                $(`#music-title-${i}`).value = m.title || '';
-                $(`#music-artist-${i}`).value = m.artist || '';
-                $(`#music-url-${i}`).value = m.url || '';
+                if($(`#music-title-${i}`)) $(`#music-title-${i}`).value = m.title || '';
+                if($(`#music-artist-${i}`)) $(`#music-artist-${i}`).value = m.artist || '';
+                if($(`#music-url-${i}`)) $(`#music-url-${i}`).value = m.url || '';
             }
         }
 
         if (contentData.news) {
-            $('#news-text').value = contentData.news.text || '';
-            $('#news-active').checked = !!contentData.news.isActive;
+            if($('#news-text')) $('#news-text').value = contentData.news.text || '';
+            if($('#news-active')) $('#news-active').checked = !!contentData.news.isActive;
         }
 
         if (contentData.prices && Array.isArray(contentData.prices)) {
             contentData.prices.forEach((p, idx) => {
-                $(`#price-title-${idx}`).value = p.title || '';
-                $(`#price-amt-${idx}`).value = p.amount || '';
-                $(`#price-period-${idx}`).value = p.period || '';
-                if (Array.isArray(p.features)) {
+                if($(`#price-title-${idx}`)) $(`#price-title-${idx}`).value = p.title || '';
+                if($(`#price-amt-${idx}`)) $(`#price-amt-${idx}`).value = p.amount || '';
+                if($(`#price-period-${idx}`)) $(`#price-period-${idx}`).value = p.period || '';
+                if (Array.isArray(p.features) && $(`#price-feat-${idx}`)) {
                     $(`#price-feat-${idx}`).value = p.features.join('\n');
                 }
             });
         }
 
         if (contentData.contact) {
-            $('#contact-phone').value = contentData.contact.phone || '';
-            $('#contact-email').value = contentData.contact.email || '';
-            $('#contact-address').value = contentData.contact.address || '';
-            $('#contact-maps').value = contentData.contact.mapsUrl || '';
+            if($('#contact-phone')) $('#contact-phone').value = contentData.contact.phone || '';
+            if($('#contact-email')) $('#contact-email').value = contentData.contact.email || '';
+            if($('#contact-address')) $('#contact-address').value = contentData.contact.address || '';
+            if($('#contact-maps')) $('#contact-maps').value = contentData.contact.mapsUrl || '';
         }
         if (contentData.footer) {
-            $('#footer-text').value = contentData.footer.text || '';
+            if($('#footer-text')) $('#footer-text').value = contentData.footer.text || '';
         }
 
         if (contentData.seo) {
-            $('#seo-title').value = contentData.seo.title || '';
-            $('#seo-desc').value = contentData.seo.description || '';
-            $('#seo-keys').value = contentData.seo.keywords || '';
+            if($('#seo-title')) $('#seo-title').value = contentData.seo.title || '';
+            if($('#seo-desc')) $('#seo-desc').value = contentData.seo.description || '';
+            if($('#seo-keys')) $('#seo-keys').value = contentData.seo.keywords || '';
         }
 
         if (contentData.social) {
-            $('#soc-ig').value = contentData.social.instagram || '';
-            $('#soc-yt').value = contentData.social.youtube || '';
-            $('#soc-wp').value = contentData.social.whatsapp || '';
+            if($('#soc-ig')) $('#soc-ig').value = contentData.social.instagram || '';
+            if($('#soc-yt')) $('#soc-yt').value = contentData.social.youtube || '';
+            if($('#soc-wp')) $('#soc-wp').value = contentData.social.whatsapp || '';
         }
 
         renderArrayCards('programs', contentData.programs || [], ['title', 'subtitle', 'image']);
@@ -355,9 +376,9 @@
         
         const previewImg = input.parentElement.querySelector('img');
         const label = input.parentElement.querySelector('label');
-        const originalLabel = label.textContent;
+        const originalLabel = label ? label.textContent : 'Görsel Seç';
         
-        label.textContent = 'Yükleniyor...';
+        if(label) label.textContent = 'Yükleniyor...';
         
         const formData = new FormData();
         formData.append('image', file);
@@ -370,7 +391,8 @@
             });
             const data = await res.json();
             if (res.ok && data.url) {
-                $(targetId).value = data.url;
+                const target = $(targetId);
+                if(target) target.value = data.url;
                 if (previewImg) previewImg.src = data.url;
                 toast('Görsel başarıyla yüklendi');
             } else {
@@ -378,8 +400,8 @@
             }
         } catch {
             toast('Görsel yüklenirken sunucu hatası oluştu', 'error');
-        } finally {
-            label.textContent = originalLabel;
+        } finaly {
+            if(label) label.textContent = originalLabel;
         }
     };
 
@@ -391,6 +413,7 @@
 
     const saveSection = async (section, data) => {
         try {
+            if (!API || !API.content) return;
             await api(`${API.content}/${section}`, {
                 method: 'PUT',
                 body: JSON.stringify(data)
@@ -401,12 +424,12 @@
         }
     };
 
-    const saveHero = () => saveSection('hero', { title: $('#hero-title').value, subtitle: $('#hero-subtitle').value, bgImage: $('#hero-bg-url').value });
-    const saveAbout = () => saveSection('about', { title: $('#about-title').value, description1: $('#about-desc1').value, description2: $('#about-desc2').value, image: $('#about-img-url').value });
-    const saveNews = () => saveSection('news', { text: $('#news-text').value, isActive: $('#news-active').checked });
-    const saveFooter = () => saveSection('footer', { text: $('#footer-text').value });
-    const saveSEO = () => saveSection('seo', { title: $('#seo-title').value, description: $('#seo-desc').value, keywords: $('#seo-keys').value });
-    const saveSocial = () => saveSection('social', { instagram: $('#soc-ig').value, youtube: $('#soc-yt').value, whatsapp: $('#soc-wp').value });
+    const saveHero = () => saveSection('hero', { title: $('#hero-title')?.value || '', subtitle: $('#hero-subtitle')?.value || '', bgImage: $('#hero-bg-url')?.value || '' });
+    const saveAbout = () => saveSection('about', { title: $('#about-title')?.value || '', description1: $('#about-desc1')?.value || '', description2: $('#about-desc2')?.value || '', image: $('#about-img-url')?.value || '' });
+    const saveNews = () => saveSection('news', { text: $('#news-text')?.value || '', isActive: $('#news-active') ? $('#news-active').checked : false });
+    const saveFooter = () => saveSection('footer', { text: $('#footer-text')?.value || '' });
+    const saveSEO = () => saveSection('seo', { title: $('#seo-title')?.value || '', description: $('#seo-desc')?.value || '', keywords: $('#seo-keys')?.value || '' });
+    const saveSocial = () => saveSection('social', { instagram: $('#soc-ig')?.value || '', youtube: $('#soc-yt')?.value || '', whatsapp: $('#soc-wp')?.value || '' });
     const savePrograms = () => saveSection('programs', getArrayData('programs', ['title', 'subtitle', 'image']));
     const saveAthletes = () => saveSection('athletes', getArrayData('athletes', ['name', 'title', 'image']));
     const saveProducts = () => saveSection('products', getArrayData('products', ['name', 'price', 'image', 'link']));
@@ -415,7 +438,9 @@
     const saveMusics = () => {
         const musics = [];
         for (let i = 0; i < 3; i++) {
-            musics.push({ title: $(`#music-title-${i}`).value, artist: $(`#music-artist-${i}`).value, url: $(`#music-url-${i}`).value });
+            if($(`#music-title-${i}`)) {
+                musics.push({ title: $(`#music-title-${i}`).value, artist: $(`#music-artist-${i}`).value, url: $(`#music-url-${i}`).value });
+            }
         }
         saveSection('musics', musics);
     };
@@ -423,22 +448,24 @@
     const savePrices = () => {
         const prices = [];
         for (let i = 0; i < 3; i++) {
-            prices.push({
-                title: $(`#price-title-${i}`).value,
-                amount: $(`#price-amt-${i}`).value,
-                period: $(`#price-period-${i}`).value,
-                features: $(`#price-feat-${i}`).value.split('\n').map(x => x.trim()).filter(Boolean)
-            });
+            if($(`#price-title-${i}`)) {
+                prices.push({
+                    title: $(`#price-title-${i}`).value,
+                    amount: $(`#price-amt-${i}`).value,
+                    period: $(`#price-period-${i}`).value,
+                    features: $(`#price-feat-${i}`).value.split('\n').map(x => x.trim()).filter(Boolean)
+                });
+            }
         }
         saveSection('prices', prices);
     };
 
     const saveContact = () => {
         saveSection('contact', {
-            phone: $('#contact-phone').value,
-            email: $('#contact-email').value,
-            address: $('#contact-address').value,
-            mapsUrl: $('#contact-maps').value
+            phone: $('#contact-phone')?.value || '',
+            email: $('#contact-email')?.value || '',
+            address: $('#contact-address')?.value || '',
+            mapsUrl: $('#contact-maps')?.value || ''
         });
     };
 
@@ -473,9 +500,9 @@
     };
 
     const saveBlog = async () => {
-        const title = $('#blog-title').value.trim();
-        const content = $('#blog-content').value.trim();
-        const image = $('#blog-img-url').value;
+        const title = $('#blog-title')?.value.trim() || '';
+        const content = $('#blog-content')?.value.trim() || '';
+        const image = $('#blog-img-url')?.value || '';
 
         if (!title || !content) return toast('Başlık ve içerik alanları zorunludur', 'error');
 
@@ -504,12 +531,12 @@
         const b = (contentData.blogs || []).find(x => x._id === id);
         if (!b) return;
         editingBlogId = id;
-        $('#blog-title').value = b.title || '';
-        $('#blog-content').value = b.content || '';
-        $('#blog-img-url').value = b.image || '';
-        $('#blog-img-preview').src = b.image || '';
-        $('#blog-form-title').textContent = 'Yazıyı Düzenle';
-        $('#cancel-blog-edit').classList.remove('hidden');
+        if($('#blog-title')) $('#blog-title').value = b.title || '';
+        if($('#blog-content')) $('#blog-content').value = b.content || '';
+        if($('#blog-img-url')) $('#blog-img-url').value = b.image || '';
+        if($('#blog-img-preview')) $('#blog-img-preview').src = b.image || '';
+        if($('#blog-form-title')) $('#blog-form-title').textContent = 'Yazıyı Düzenle';
+        $('#cancel-blog-edit')?.classList.remove('hidden');
     };
 
     const deleteBlog = async (id) => {
@@ -525,12 +552,12 @@
 
     const resetBlogForm = () => {
         editingBlogId = null;
-        $('#blog-title').value = '';
-        $('#blog-content').value = '';
-        $('#blog-img-url').value = '';
-        $('#blog-img-preview').src = '';
-        $('#blog-form-title').textContent = 'Yeni Yazı Ekle';
-        $('#cancel-blog-edit').classList.add('hidden');
+        if($('#blog-title')) $('#blog-title').value = '';
+        if($('#blog-content')) $('#blog-content').value = '';
+        if($('#blog-img-url')) $('#blog-img-url').value = '';
+        if($('#blog-img-preview')) $('#blog-img-preview').src = '';
+        if($('#blog-form-title')) $('#blog-form-title').textContent = 'Yeni Yazı Ekle';
+        $('#cancel-blog-edit')?.classList.add('hidden');
     };
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -556,17 +583,17 @@
             if (el) el.addEventListener('click', fn);
         };
 
-        safeBind('#save-hero', saveHero);
-        safeBind('#save-about', saveAbout);
-        safeBind('#save-musics', saveMusics);
-        safeBind('#save-news', saveNews);
-        safeBind('#save-prices', savePrices);
-        safeBind('#save-contact', saveContact);
-        safeBind('#save-footer', saveFooter);
-        safeBind('#save-seo', saveSEO);
-        safeBind('#save-social', saveSocial);
-        safeBind('#save-programs', savePrograms);
-        safeBind('#save-athletes', saveAthletes);
+        safeBind('#save-hero', safeHero);
+        safeBind('#save-about', safeAbout);
+        safeBind('#save-musics', safeMusics);
+        safeBind('#save-news', safeNews);
+        safeBind('#save-prices', safePrices);
+        safeBind('#save-contact', safeContact);
+        safeBind('#save-footer', safeFooter);
+        safeBind('#save-seo', safeSEO);
+        safeBind('#save-social', safeSocial);
+        safeBind('#save-programs', safePrograms);
+        safeBind('#save-athletes', safeAthletes);
         safeBind('#save-products', saveProducts);
         safeBind('#save-sponsors', saveSponsors);
         safeBind('#save-blog', saveBlog);
