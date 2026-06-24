@@ -1,5 +1,5 @@
 /**
- * Sporline Admin Panel v2.2 - Failure-Proof Edition
+ * Sporline Admin Panel v2.3 - Bug-Free Edition
  */
 (function () {
     const config = window.SportlineConfig || {};
@@ -129,7 +129,7 @@
                 token = data.token;
                 toast('Giriş başarılı, panel yükleniyor...');
                 setTimeout(() => window.location.reload(), 1000);
-                return; // Başarılıysa butonu açmaya gerek yok sayfa yenilenecek
+                return;
             } else {
                 toast(data.message || 'Giriş bilgileri hatalı veya sunucu hatası (Durum: ' + res.status + ')', 'error');
             }
@@ -137,7 +137,6 @@
             console.error('Giriş Fonksiyonu Çöktü:', err);
             toast('Sunucuyla bağlantı kurulamadı veya kod çöktü!', 'error');
         } finally {
-            // Hata ne olursa olsun buton kilitlenmeyecek, serbest kalacak!
             btn.disabled = false;
             btn.textContent = originalText;
         }
@@ -400,7 +399,7 @@
             }
         } catch {
             toast('Görsel yüklenirken sunucu hatası oluştu', 'error');
-        } finaly {
+        } finally { // <--- İmla hatası burada düzeltildi! (finaly -> finally)
             if(label) label.textContent = originalLabel;
         }
     };
@@ -594,9 +593,9 @@
         safeBind('#save-social', safeSocial);
         safeBind('#save-programs', safePrograms);
         safeBind('#save-athletes', safeAthletes);
-        safeBind('#save-products', saveProducts);
-        safeBind('#save-sponsors', saveSponsors);
-        safeBind('#save-blog', saveBlog);
+        safeBind('#save-products', safeProducts);
+        safeBind('#save-sponsors', safeSponsors);
+        safeBind('#save-blog', safeBlog);
         safeBind('#cancel-blog-edit', resetBlogForm);
 
         safeBind('#add-program-btn', () => {
