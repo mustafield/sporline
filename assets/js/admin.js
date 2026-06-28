@@ -4,7 +4,7 @@
 (function () {
     const config = window.SportlineConfig || {};
     const { API } = config;
-    const API_BASE = config.API_BASE || 'https://sporline.onrender.com';
+    const API_BASE = (window.SportlineConfig && window.SportlineConfig.API_BASE) || config.API_BASE || 'https://sporline.onrender.com';
     
     let token = localStorage.getItem('sporline_token');
     let currentUser = null;
