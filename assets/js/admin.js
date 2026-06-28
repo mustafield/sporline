@@ -68,8 +68,9 @@
         if (!token) return showLogin(true);
         try {
             const res = await api(`${API_BASE}/api/auth/me`); 
-            if (res && res.user) {
-                currentUser = res.user;
+            const meUser = (res && res.data && res.data.user) || (res && res.user);
+            if (meUser) {
+                currentUser = meUser;
                 if ($('#user-name')) $('#user-name').textContent = currentUser.name || 'Yönetici';
                 if ($('#user-avatar')) $('#user-avatar').textContent = (currentUser.name || 'Y').charAt(0);
                 showLogin(false);
@@ -108,7 +109,7 @@
             console.log('Login API yaniti:', JSON.stringify(data));
 
             // token, accessToken, jwt, access_token farkli key isimlerini destekle
-            const receivedToken = data.token || data.accessToken || data.access_token || data.jwt;
+            const receivedToken = (data.data && data.data.token) || data.token || data.accessToken || data.access_token || data.jwt;
 
             if (res.ok && receivedToken) {
                 localStorage.setItem('sporline_token', receivedToken);
