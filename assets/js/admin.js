@@ -68,7 +68,10 @@
         if (!token) return showLogin(true);
         try {
             const res = await api(`${API_BASE}/api/auth/me`); 
-            const meUser = (res && res.data && res.data.user) || (res && res.user);
+            // /api/auth/me -> { success, data: userObj } formatında dönüyor (authController: res.json({ success: true, data: req.user }))
+            const meUser = (res && res.data && res.data.user)
+                        || (res && res.data && (res.data.email || res.data._id || res.data.id) && res.data)
+                        || (res && res.user);
             if (meUser) {
                 currentUser = meUser;
                 if ($('#user-name')) $('#user-name').textContent = currentUser.name || 'Yönetici';
@@ -114,8 +117,9 @@
             if (res.ok && receivedToken) {
                 localStorage.setItem('sporline_token', receivedToken);
                 token = receivedToken;
+                showLogin(false);
                 toast('Giriş başarılı, panel yükleniyor...');
-                setTimeout(() => window.location.reload(), 1000);
+                initDashboard();
             } else {
                 const errMsg = data.message || data.error || data.msg || ('Sunucu yaniti: ' + JSON.stringify(data));
                 toast(errMsg + ' (HTTP: ' + res.status + ')', 'error');
