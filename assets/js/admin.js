@@ -209,21 +209,21 @@
         if (contentData.hero) {
             if($('#hero-tagline')) $('#hero-tagline').value = contentData.hero.tagline || '';
             if($('#hero-video')) $('#hero-video').value = contentData.hero.videoUrl || '';
-            if($('#hero-title1')) $('#hero-title1').value = contentData.hero.title1 || '';
-            if($('#hero-title2')) $('#hero-title2').value = contentData.hero.title2 || '';
+            if($('#hero-title1')) $('#hero-title1').value = contentData.hero.titleLine1 || '';
+            if($('#hero-title2')) $('#hero-title2').value = contentData.hero.titleLine2 || '';
             if($('#hero-desc')) $('#hero-desc').value = contentData.hero.description || '';
-            if($('#hero-cta1')) $('#hero-cta1').value = contentData.hero.cta1 || '';
-            if($('#hero-cta2')) $('#hero-cta2').value = contentData.hero.cta2 || '';
+            if($('#hero-cta1')) $('#hero-cta1').value = contentData.hero.ctaPrimary || '';
+            if($('#hero-cta2')) $('#hero-cta2').value = contentData.hero.ctaSecondary || '';
         }
 
-        // Hakkımızda Bölümü (HTML ID'lerine tam uyumlu)
-        if (contentData.about) {
-            if($('#about-label')) $('#about-label').value = contentData.about.label || '';
-            if($('#about-title')) $('#about-title').value = contentData.about.title || '';
-            if($('#about-subtitle')) $('#about-subtitle').value = contentData.about.subtitle || '';
-            if($('#about-text1')) $('#about-text1').value = contentData.about.text1 || '';
-            if($('#about-text2')) $('#about-text2').value = contentData.about.text2 || '';
-            if($('#about-image')) $('#about-image').value = contentData.about.image || '';
+        // Hakkımızda Bölümü (main.js ile uyumlu: hakkimizda anahtarı)
+        if (contentData.hakkimizda) {
+            if($('#about-label')) $('#about-label').value = contentData.hakkimizda.sectionLabel || '';
+            if($('#about-title')) $('#about-title').value = contentData.hakkimizda.title || '';
+            if($('#about-subtitle')) $('#about-subtitle').value = contentData.hakkimizda.subtitle || '';
+            if($('#about-text1')) $('#about-text1').value = contentData.hakkimizda.text1 || '';
+            if($('#about-text2')) $('#about-text2').value = contentData.hakkimizda.text2 || '';
+            if($('#about-image')) $('#about-image').value = contentData.hakkimizda.imageUrl || '';
         }
 
         // Fon Müzikleri (Sıralı Oynatma 3 Adet)
@@ -238,13 +238,13 @@
             if($('#news-text')) $('#news-text').value = Array.isArray(contentData.news.text) ? contentData.news.text.join('\n') : (contentData.news.text || '');
         }
 
-        // İletişim Bilgileri
-        if (contentData.contact) {
-            if($('#contact-phone')) $('#contact-phone').value = contentData.contact.phone || '';
-            if($('#contact-email')) $('#contact-email').value = contentData.contact.email || '';
-            if($('#contact-address')) $('#contact-address').value = contentData.contact.address || '';
-            if($('#contact-mapsrc')) $('#contact-mapsrc').value = contentData.contact.mapsSrc || '';
-            if($('#contact-hours')) $('#contact-hours').value = contentData.contact.hours || '';
+        // İletişim Bilgileri (main.js ile uyumlu: iletisim anahtarı)
+        if (contentData.iletisim) {
+            if($('#contact-phone')) $('#contact-phone').value = contentData.iletisim.telefon || '';
+            if($('#contact-email')) $('#contact-email').value = contentData.iletisim.email || '';
+            if($('#contact-address')) $('#contact-address').value = contentData.iletisim.adres || '';
+            if($('#contact-mapsrc')) $('#contact-mapsrc').value = contentData.iletisim.mapsSrc || '';
+            if($('#contact-hours')) $('#contact-hours').value = contentData.iletisim.saatler || '';
         }
 
         // Sosyal Medya
@@ -255,10 +255,10 @@
             if($('#social-youtube')) $('#social-youtube').value = contentData.social.youtube || '';
         }
 
-        // Footer Alt Bilgileri
+        // Footer Alt Bilgileri (main.js ile uyumlu: tagline, copyright)
         if (contentData.footer) {
-            if($('#footer-copy')) $('#footer-copy').value = contentData.footer.copy || '';
-            if($('#footer-about')) $('#footer-about').value = contentData.footer.about || '';
+            if($('#footer-copy')) $('#footer-copy').value = contentData.footer.copyright || '';
+            if($('#footer-about')) $('#footer-about').value = contentData.footer.tagline || '';
         }
 
         // SEO Ayarları
@@ -489,12 +489,12 @@
         $('#blog-image-file')?.addEventListener('change', () => handleFileUpload('#blog-image-file', '#blog-image'));
 
         // Bölüm Kayıt Tetikleyicileri
-        $('#save-hero')?.addEventListener('click', () => saveSection('hero', { tagline: $('#hero-tagline').value, videoUrl: $('#hero-video').value, title1: $('#hero-title1').value, title2: $('#hero-title2').value, description: $('#hero-desc').value, cta1: $('#hero-cta1').value, cta2: $('#hero-cta2').value }));
-        $('#save-about')?.addEventListener('click', () => saveSection('about', { label: $('#about-label').value, title: $('#about-title').value, subtitle: $('#about-subtitle').value, text1: $('#about-text1').value, text2: $('#about-text2').value, image: $('#about-image').value }));
+        $('#save-hero')?.addEventListener('click', () => saveSection('hero', { tagline: $('#hero-tagline').value, videoUrl: $('#hero-video').value, titleLine1: $('#hero-title1').value, titleLine2: $('#hero-title2').value, description: $('#hero-desc').value, ctaPrimary: $('#hero-cta1').value, ctaSecondary: $('#hero-cta2').value }));
+        $('#save-about')?.addEventListener('click', () => saveSection('hakkimizda', { sectionLabel: $('#about-label').value, title: $('#about-title').value, subtitle: $('#about-subtitle').value, text1: $('#about-text1').value, text2: $('#about-text2').value, imageUrl: $('#about-image').value }));
         $('#save-news')?.addEventListener('click', () => saveSection('news', { text: $('#news-text').value.split('\n').filter(Boolean) }));
-        $('#save-contact')?.addEventListener('click', () => saveSection('contact', { phone: $('#contact-phone').value, email: $('#contact-email').value, address: $('#contact-address').value, mapsSrc: $('#contact-mapsrc').value, hours: $('#contact-hours').value }));
-        $('#social-save')?.addEventListener('click', () => saveSection('social', { instagram: $('#social-instagram').value, whatsapp: $('#social-whatsapp').value, facebook: $('#social-facebook').value, youtube: $('#social-youtube').value }));
-        $('#save-footer')?.addEventListener('click', () => saveSection('footer', { copy: $('#footer-copy').value, about: $('#footer-about').value }));
+        $('#save-contact')?.addEventListener('click', () => saveSection('iletisim', { telefon: $('#contact-phone').value, email: $('#contact-email').value, adres: $('#contact-address').value, mapsSrc: $('#contact-mapsrc').value, saatler: $('#contact-hours').value }));
+        $('#save-social')?.addEventListener('click', () => saveSection('social', { instagram: $('#social-instagram').value, whatsapp: $('#social-whatsapp').value, facebook: $('#social-facebook').value, youtube: $('#social-youtube').value }));
+        $('#save-footer')?.addEventListener('click', () => saveSection('footer', { copyright: $('#footer-copy').value, tagline: $('#footer-about').value }));
         $('#save-seo')?.addEventListener('click', () => saveSection('seo', { title: $('#seo-title').value, keywords: $('#seo-keywords').value, description: $('#seo-desc').value }));
         
         $('#save-musics')?.addEventListener('click', () => {
@@ -509,7 +509,6 @@
         $('#save-products')?.addEventListener('click', () => saveSection('products', getDynamicCardData('products', ['name', 'price', 'image', 'link'])));
         $('#save-sponsors')?.addEventListener('click', () => saveSection('sponsors', getDynamicCardData('sponsors', ['name', 'logo'])));
         
-        $('#save-brandDark')?.addEventListener('click', saveBlog);
         $('#save-blog')?.addEventListener('click', saveBlog);
         $('#cancel-blog-edit')?.addEventListener('click', resetBlogForm);
 
