@@ -103,14 +103,21 @@
             });
             
             const data = await res.json();
-            
-            if (res.ok && data.token) {
-                localStorage.setItem('sporline_token', data.token);
-                token = data.token;
+
+            // Backend hangi key ile token gonderiyor - konsola yaz (debug)
+            console.log('Login API yaniti:', JSON.stringify(data));
+
+            // token, accessToken, jwt, access_token farkli key isimlerini destekle
+            const receivedToken = data.token || data.accessToken || data.access_token || data.jwt;
+
+            if (res.ok && receivedToken) {
+                localStorage.setItem('sporline_token', receivedToken);
+                token = receivedToken;
                 toast('Giriş başarılı, panel yükleniyor...');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                toast(data.message || 'Giriş bilgileri hatalı! (Hata Kodu: ' + res.status + ')', 'error');
+                const errMsg = data.message || data.error || data.msg || ('Sunucu yaniti: ' + JSON.stringify(data));
+                toast(errMsg + ' (HTTP: ' + res.status + ')', 'error');
             }
         } catch (err) {
             toast('Sunucuyla bağlantı kurulamadı!', 'error');
