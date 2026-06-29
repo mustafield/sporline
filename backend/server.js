@@ -30,13 +30,11 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// --- CORS AYARI GÜNCELLENDİ (Üretim ortamında izinler genişletildi) ---
 app.use(cors({
-    origin: 'https://www.sporlinefitness.com.tr', // Sadece senin alan adından gelen isteklere izin ver
+    origin: 'https://www.sporlinefitness.com.tr', // Güvenlik için sabit domain
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    // 'Cache-Control' başlığını allowedHeaders listesine ekledik
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'] // 'Cache-Control' buraya eklendi
 }));
 
 const apiLimiter = rateLimit({
