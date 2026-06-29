@@ -4,8 +4,8 @@ const logger = require('../utils/logger');
 
 exports.createLead = async (req, res, next) => {
     try {
-        const { adSoyad, telefon, brans } = req.body;
-        const newLead = new Contact({ adSoyad, telefon, brans });
+        const { adSoyad, telefon, brans, mesaj } = req.body;
+        const newLead = new Contact({ adSoyad, telefon, brans, mesaj });
         await newLead.save();
 
         sendLeadNotification(newLead).catch(() => {});

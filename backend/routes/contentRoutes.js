@@ -6,6 +6,8 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/stream', contentStream);
 router.get('/', getContent);
 router.post('/', protect, authorize('admin', 'editor'), updateContent);
-router.patch('/:section', protect, authorize('admin', 'editor'), updateSection);
+router.route('/:section')
+    .patch(protect, authorize('admin', 'editor'), updateSection)
+    .put(protect, authorize('admin', 'editor'), updateSection);
 
 module.exports = router;

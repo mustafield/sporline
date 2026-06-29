@@ -232,6 +232,10 @@ const ContentSchema = new mongoose.Schema({
         type: Map,
         of: String,
         default: {}
+    },
+    musics: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true });
 

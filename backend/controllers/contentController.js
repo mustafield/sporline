@@ -122,20 +122,45 @@ exports.updateContent = async (req, res, next) => {
 exports.updateSection = async (req, res, next) => {
     try {
         const { section } = req.params;
-        const content = await Content.findOne();
-
+        let content = await Content.findOne();
         if (!content) {
-            return res.status(404).json({ success: false, message: 'İçerik bulunamadı.' });
+            content = new Content({});
         }
 
-        content[section] = req.body;
-        content.markModified(section);
-        await content.save();
-        invalidateCache('content');
-        await broadcastContentUpdate(content.toObject());
+        const body = req.body;
+        const current = content[section];
+        const isPlainObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
 
-        res.status(200).json({ success: true, message: `${section} güncellendi.`, data: content[section] });
+        if (Array.isArray(body)) {
+            // Bölüm bir "items" listesi içeren obje ise (programlar, paketler, milliSporcular, urunler, sponsorlar...)
+            // gelen diziyi o objenin items alanına yaz; aksi halde bölümün kendisini dizi olarak ata.
+            if (isPlainObject(current) && current.items !== undefined) {
+                content[section].items = body;
+            } else {
+                content[section] = body;
+            }
+        } else if (isPlainObject(body)) {
+            // Obje bölümlerde sadece gelen alanları güncelle (diğer alanları silmeden birleştir).
+            if (isPlainObject(current)) {
+                Object.keys(body).forEach((key) => {
+                    content[section][key] = body[key];
+                });
+            } else {
+                content[section] = body;
+            }
+        } else {
+            content[section] = body;
+        }
+
+        content.markModified(section);
+        const saved = await content.save();
+        invalidateCache('content');
+        await broadcastContentUpdate(saved.toObject());
+
+        logger.info('Bölüm güncellendi', { section, user: req.user?.email });
+        res.status(200).json({ success: true, message: `${section} güncellendi.`, data: saved[section] });
     } catch (err) {
+        logger.error('updateSection içinde hata meydana geldi:', { hata: err.message });
         next(err);
     }
 };
