@@ -49,7 +49,6 @@ document.addEventListener('keydown', (e) => {
  
 // ─── MONGOODB'DEN CANLI VERİLERİ ÇEKİP SİTEYE BASAN SCRIPT ───
 document.addEventListener('DOMContentLoaded', async () => {
-    // config.js dosyasından Render API url'sini otomatik alıyoruz
     const { API } = window.SportlineConfig || {};
     if (!API || !API.content) {
         console.error("CMS Hatası: API bağlantı ayarları yüklenemedi.");
@@ -57,34 +56,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // Render sunucusundan verileri çekiyoruz (Önbelleği kırmak için sonuna anlık zaman ekledik)
         const res = await fetch(`${API.content}?t=${Date.now()}`);
         const result = await res.json();
 
         if (result && result.success) {
             const content = result.data;
             
-            // HTML elementlerini bulup içini dolduran yardımcı fonksiyon
+            // Medya öğelerini de destekleyen güncellenmiş fonksiyon
             const updateCmsElement = (key, value) => {
-                if (!value) return;
+                if (value === undefined || value === null) return;
                 const elements = document.querySelectorAll(`[data-cms-key="${key}"]`);
                 
                 elements.forEach(el => {
                     if (el.tagName === 'IMG') {
+                        el.src = value; 
+                    } else if (el.tagName === 'VIDEO') {
                         el.src = value;
-                        } else if (el.tagName === 'VIDEO') {
-    el.src = value;
-    el.load();
-    el.play().catch(e => console.log("Video oynatma hatası:", e));
-} else if (el.tagName === 'SOURCE') {
-    el.src = value;
-    const videoParent = el.closest('video'); // En yakın video elementini güvenle bulur
-    if (videoParent) {
-        videoParent.load();
-        videoParent.play().catch(e => console.log("Video oynatma hatası:", e));
-    } 
+                        el.load();
+                        el.play().catch(e => console.log("Video oynatma hatası:", e));
+                    } else if (el.tagName === 'SOURCE') {
+                        el.src = value;
+                        const videoParent = el.closest('video');
+                        if (videoParent) {
+                            videoParent.load();
+                        }
                     } else {
-                        // h1, p, span gibi metin alanlarını günceller
                         el.innerHTML = value; 
                     }
                 });
