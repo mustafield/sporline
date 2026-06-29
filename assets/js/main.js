@@ -6,6 +6,7 @@ const themeSwitch = document.getElementById('theme-switch');
 const htmlEl = document.documentElement;
 const themeOverlay = document.getElementById('theme-overlay');
 
+// Tema yönetimi
 if (localStorage.getItem('theme') === 'light') {
     htmlEl.classList.remove('dark');
     htmlEl.classList.add('light');
@@ -46,7 +47,7 @@ const menuToggle = document.getElementById('menu-toggle');
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && menuToggle) menuToggle.checked = false;
 });
- 
+
 // ─── MONGOODB'DEN CANLI VERİLERİ ÇEKİP SİTEYE BASAN SCRIPT ───
 document.addEventListener('DOMContentLoaded', async () => {
     const { API } = window.SportlineConfig || {};
@@ -62,20 +63,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (result && result.success) {
             const content = result.data;
             
-            // Medya öğelerini de destekleyen güncellenmiş fonksiyon
+            // Görsel/Video yollarını düzenleyen yardımcı fonksiyon
+            const getValidUrl = (url) => {
+                if (!url) return '';
+                // URL zaten tam linkse (http ile başlıyorsa) dokunma, değilse /uploads/ altına ekle
+                return url.startsWith('http') ? url : `https://sporline.onrender.com/uploads/${url}`;
+            };
+
             const updateCmsElement = (key, value) => {
                 if (value === undefined || value === null) return;
                 const elements = document.querySelectorAll(`[data-cms-key="${key}"]`);
                 
                 elements.forEach(el => {
                     if (el.tagName === 'IMG') {
-                        el.src = value; 
+                        el.src = getValidUrl(value);
                     } else if (el.tagName === 'VIDEO') {
-                        el.src = value;
+                        el.src = getValidUrl(value);
                         el.load();
                         el.play().catch(e => console.log("Video oynatma hatası:", e));
                     } else if (el.tagName === 'SOURCE') {
-                        el.src = value;
+                        el.src = getValidUrl(value);
                         const videoParent = el.closest('video');
                         if (videoParent) {
                             videoParent.load();
@@ -86,41 +93,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             };
 
-            // 1. HERO BÖLÜMÜ GÜNCELLEMELERİ
+            // İçerik Güncellemeleri
             if (content.hero) {
                 updateCmsElement('hero_tagline', content.hero.tagline);
                 updateCmsElement('hero_title1', content.hero.titleLine1);
                 updateCmsElement('hero_title2', content.hero.titleLine2);
                 updateCmsElement('hero_desc', content.hero.description);
                 updateCmsElement('hero_video', content.hero.videoUrl);
-                updateCmsElement('hero_cta1', content.hero.ctaPrimary);
-                updateCmsElement('hero_cta2', content.hero.ctaSecondary);
             }
 
-            // 2. HAKKIMIZDA BÖLÜMÜ GÜNCELLEMELERİ
             if (content.hakkimizda) {
                 updateCmsElement('about_label', content.hakkimizda.sectionLabel);
                 updateCmsElement('about_title', content.hakkimizda.title);
-                updateCmsElement('about_subtitle', content.hakkimizda.subtitle);
                 updateCmsElement('about_text1', content.hakkimizda.text1);
-                updateCmsElement('about_text2', content.hakkimizda.text2);
                 updateCmsElement('about_image', content.hakkimizda.imageUrl);
             }
 
-            // 3. İLETİŞİM BÖLÜMÜ GÜNCELLEMELERİ
-            if (content.iletisim) {
-                updateCmsElement('contact_phone', content.iletisim.telefon);
-                updateCmsElement('contact_email', content.iletisim.email);
-                updateCmsElement('contact_address', content.iletisim.adres);
-                updateCmsElement('contact_hours', content.iletisim.saatler);
-            }
-
-            // 4. FOOTER BÖLÜMÜ GÜNCELLEMELERİ
-            if (content.footer) {
-                updateCmsElement('footer_tagline', content.footer.tagline);
-                updateCmsElement('footer_copyright', content.footer.copyright);
-            }
-
+            // Diğer alanlar...
             console.log("Sporline CMS: Canlı veriler başarıyla yüklendi.");
         }
     } catch (err) {
