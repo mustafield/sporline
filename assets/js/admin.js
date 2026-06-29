@@ -369,34 +369,44 @@
         });
         return result;
     };
-
-    const handleFileUpload = async (fileInputId, textInputId) => {
+const handleFileUpload = async (fileInputId, textInputId) => {
         const fileInput = $(fileInputId);
-        if (!fileInput || !fileInput.files[0]) return;
+        if (!fileInput || !fileInput.files[0]) {
+            toast('Lütfen önce bir dosya seçin.', 'error');
+            return;
+        }
         
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
         try {
-            toast('Dosya yükleniyor...');
+            toast('Dosya buluta yükleniyor, bekleyin...');
+            
+            // Sunucumuzdaki /api/upload rotasına gönderiyoruz
             const res = await fetch(`${API_BASE}/api/upload`, {
                 method: 'POST',
                 headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: formData
             });
+            
             const data = await res.json();
-            const uploadedUrl = (data.data && data.data.url) || data.url;
-            if (res.ok && uploadedUrl) {
-                if($(textInputId)) $(textInputId).value = uploadedUrl;
-                toast('Dosya başarıyla yüklendi');
+            
+            // Bytescale'den dönen URL'yi alıp kutuya yazdırıyoruz
+            if (res.ok && data.url) {
+                if($(textInputId)) {
+                    $(textInputId).value = data.url;
+                    // Input'un değiştiğini sisteme bildiriyoruz
+                    $(textInputId).dispatchEvent(new Event('input'));
+                }
+                toast('Dosya başarıyla yüklendi!');
             } else {
                 toast(data.message || 'Yükleme başarısız', 'error');
             }
-        } catch {
-            toast('Yükleme esnasında sunucu hatası oluştu', 'error');
+        } catch (err) {
+            console.error('Yükleme hatası:', err);
+            toast('Sunucu hatası oluştu', 'error');
         }
     };
-
     const saveSection = async (section, data) => {
         try {
             await api(`${API_BASE}/api/content/${section}`, {

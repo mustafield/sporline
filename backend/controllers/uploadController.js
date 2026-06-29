@@ -1,48 +1,31 @@
+const axios = require('axios');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        cb(null, `${unique}${path.extname(file.originalname)}`);
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    const allowedExtensions = /\.(jpeg|jpg|png|webp|gif|mp4|webm|svg)$/i;
-    const allowedMime = /^(image\/(jpeg|jpg|png|webp|gif|svg\+xml)|video\/(mp4|webm))$/i;
-    const ext = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowedMime.test(file.mimetype);
-    if (ext && mime) cb(null, true);
-    else cb(new Error('Desteklenmeyen dosya formatı.'), false);
-};
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 20 * 1024 * 1024 },
-    fileFilter
-});
-
-exports.uploadFile = (req, res, next) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: 'Dosya yüklenmedi.' });
-    }
-
-    const url = `/uploads/${req.file.filename}`;
-    res.status(201).json({
-        success: true,
-        data: {
-            url,
-            filename: req.file.filename,
-            mimetype: req.file.mimetype,
-            size: req.file.size
-        }
-    });
-};
+const upload = multer(); // RAM üzerinden işlem yapar
 
 exports.uploadMiddleware = upload.single('file');
+
+exports.uploadFile = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: "Dosya seçilmedi" });
+
+        const accountId = process.env.BYTESCALE_ACCOUNT_ID;
+        const apiKey = process.env.BYTESCALE_API_KEY;
+
+        // Bytescale'e dosyayı yolluyoruz
+        const response = await axios.post(
+            `https://api.bytescale.com/v2/accounts/${accountId}/uploads/binary`,
+            req.file.buffer,
+            {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': req.file.mimetype
+                }
+            }
+        );
+
+        // Bulut bize kalıcı bir link veriyor, biz de onu siteye geri veriyoruz
+        res.status(200).json({ success: true, url: response.data.fileUrl });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Yükleme hatası" });
+    }
+};
