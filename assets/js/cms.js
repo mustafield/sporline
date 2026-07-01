@@ -12,6 +12,7 @@
     };
 
     let contentData = null;
+    const EMPTY_IMAGE_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
     // ---------- Yardımcı Set Fonksiyonları ----------
     const byId = (id) => document.getElementById(id);
@@ -31,14 +32,15 @@
     };
 
     const setImgById = (id, value) => {
-        if (!value) return;
         const el = byId(id);
-        if (el) el.setAttribute('src', value);
+        if (!el) return;
+        const src = value ? getAbsoluteUrl(value) : EMPTY_IMAGE_SRC;
+        el.setAttribute('src', src);
     };
 
     const setImgByKey = (key, value) => {
-        if (!value) return;
-        document.querySelectorAll(`[data-cms-key="${key}"]`).forEach((el) => el.setAttribute('src', value));
+        const src = value ? getAbsoluteUrl(value) : EMPTY_IMAGE_SRC;
+        document.querySelectorAll(`[data-cms-key="${key}"]`).forEach((el) => el.setAttribute('src', src));
     };
 
     const setAttrById = (id, attr, value) => {
@@ -96,8 +98,10 @@
         const videoValue = String(hero.videoUrl || '').trim();
         const usableVideo = videoValue && !/^assets\/videos\/hero-bg\.(mp4|webm)$/i.test(videoValue) ? videoValue : '';
 
-        if (typeof window.updateHeroVideo === 'function') {
+        if (usableVideo && typeof window.updateHeroVideo === 'function') {
             window.updateHeroVideo(usableVideo);
+        } else if (typeof window.clearHeroVideo === 'function') {
+            window.clearHeroVideo();
         }
     };
 
