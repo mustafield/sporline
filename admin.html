@@ -422,15 +422,17 @@
             const closeBtn = document.getElementById("close-sidebar-btn");
 
             function openSidebar() {
-                sidebar.classList.remove("sidebar-mobile-inactive");
-                sidebar.classList.add("sidebar-mobile-active");
+                sidebar.classList.remove("-translate-x-full");
+                sidebar.classList.add("translate-x-0");
                 overlay.classList.remove("hidden");
+                document.body.classList.add("overflow-hidden");
             }
 
             function closeSidebar() {
-                sidebar.classList.remove("sidebar-mobile-active");
-                sidebar.classList.add("sidebar-mobile-inactive");
+                sidebar.classList.remove("translate-x-0");
+                sidebar.classList.add("-translate-x-full");
                 overlay.classList.add("hidden");
+                document.body.classList.remove("overflow-hidden");
             }
 
             if(toggleBtn) toggleBtn.addEventListener("click", openSidebar);
@@ -444,6 +446,14 @@
                         closeSidebar();
                     }
                 });
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove("-translate-x-full", "translate-x-0");
+                    overlay.classList.add("hidden");
+                    document.body.classList.remove("overflow-hidden");
+                }
             });
         });
     </script>

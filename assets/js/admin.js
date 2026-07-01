@@ -68,6 +68,7 @@
     const checkAuth = async () => {
         if (!token) return showLogin(true);
         try {
+            showLogin(false);
             const res = await api(`${API_BASE}/api/auth/me`); 
             // /api/auth/me -> { success, data: userObj } formatında dönüyor (authController: res.json({ success: true, data: req.user }))
             const meUser = (res && res.data && res.data.user)
@@ -77,7 +78,6 @@
                 currentUser = meUser;
                 if ($('#user-name')) $('#user-name').textContent = currentUser.name || 'Yönetici';
                 if ($('#user-avatar')) $('#user-avatar').textContent = (currentUser.name || 'Y').charAt(0);
-                showLogin(false);
                 initDashboard();
             } else {
                 logout();
@@ -142,9 +142,11 @@
 
     const initDashboard = async () => {
         try {
-            await loadContent();
-            await loadLeads();
-            await loadBlogs();
+            await Promise.allSettled([
+                loadContent(),
+                loadLeads(),
+                loadBlogs()
+            ]);
             switchPanel('leads');
         } catch (err) {
             toast('Veriler yüklenirken hata oluştu', 'error');

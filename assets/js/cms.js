@@ -47,6 +47,15 @@
         if (el) el.setAttribute(attr, value);
     };
 
+    const normalizeYouTubeId = (value) => {
+        if (!value) return '';
+        if (/^[a-zA-Z0-9_-]{11}$/.test(value)) return value;
+        const text = String(value).trim();
+        const match = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+        if (match) return match[1];
+        return '';
+    };
+
     const onlyDigits = (s) => String(s || '').replace(/[^\d]/g, '');
 
     // ---------- SEO ----------
@@ -67,10 +76,16 @@
         setTextByKey('hero_tag', hero.tagline);
         setTextById('hero-title-1', hero.titleLine1);
         setTextById('hero-title-2', hero.titleLine2);
+        setTextById('hero-main-title', `${hero.titleLine1 || ''} ${hero.titleLine2 || ''}`.trim());
         setTextById('hero-desc', hero.description);
         setTextByKey('hero_desc', hero.description);
         setTextById('hero-cta-primary', hero.ctaPrimary);
         setTextById('hero-cta-secondary', hero.ctaSecondary);
+
+        const videoId = normalizeYouTubeId(hero.videoUrl);
+        if (videoId && typeof window.updateHeroVideo === 'function') {
+            window.updateHeroVideo(videoId);
+        }
     };
 
     // ---------- Hakkımızda ----------
@@ -320,6 +335,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         fetchLiveContent();
         listenLiveStreamUpdates();
+        setInterval(fetchLiveContent, 30000);
         initContactForm();
     });
 })();
