@@ -102,10 +102,16 @@
         const videoValue = String(hero.videoUrl || '').trim();
         const usableVideo = videoValue && !/^assets\/videos\/hero-bg\.(mp4|webm)$/i.test(videoValue) ? videoValue : '';
 
-        if (usableVideo && typeof window.updateHeroVideo === 'function') {
-            window.updateHeroVideo(usableVideo);
-        } else if (typeof window.clearHeroVideo === 'function') {
-            window.clearHeroVideo();
+        if (usableVideo) {
+            window.__SPORLINE_HERO_VIDEO_PENDING__ = usableVideo;
+            if (typeof window.updateHeroVideo === 'function') {
+                window.updateHeroVideo(usableVideo);
+            }
+        } else {
+            window.__SPORLINE_HERO_VIDEO_PENDING__ = '';
+            if (typeof window.clearHeroVideo === 'function') {
+                window.clearHeroVideo();
+            }
         }
     };
 
@@ -459,6 +465,12 @@
         fetchLiveContent();
         listenLiveStreamUpdates();
         setInterval(fetchLiveContent, 30000);
+        window.addEventListener('focus', fetchLiveContent);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                fetchLiveContent();
+            }
+        });
         initContactForm();
     });
 })();
