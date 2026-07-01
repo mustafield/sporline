@@ -256,14 +256,21 @@
 
         <aside id="sidebar-news" class="hidden xl:block fixed top-28 right-6 w-96 max-w-xs z-40">
             <div class="rounded-3xl border border-neutral-900 bg-brandCard/95 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
-                <span id="sidebar-news-label" class="text-[10px] font-bold uppercase tracking-[0.35em] text-brandGold">Haber Köşesi</span>
-                <h3 id="sidebar-news-title" class="mt-3 text-xl font-black uppercase text-white">Son Dakika Gelişmeleri</h3>
-                <p id="sidebar-news-intro" class="mt-3 text-[12px] text-neutral-400 leading-relaxed">Sporline'da bugün neler oluyor? Yeni içerik ve duyuruları hemen keşfedin.</p>
-                <div class="mt-5 border-t border-neutral-900 pt-5">
-                    <h4 class="text-[10px] font-bold uppercase tracking-[0.35em] text-neutral-500">Rastgele Bilgiler</h4>
-                    <ul id="sidebar-news-facts" class="mt-4 space-y-3 text-[12px] text-neutral-400 leading-relaxed"></ul>
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <span id="sidebar-news-label" class="text-[10px] font-bold uppercase tracking-[0.35em] text-brandGold">Haber Köşesi</span>
+                        <h3 id="sidebar-news-title" class="mt-3 text-xl font-black uppercase text-white">Son Dakika Gelişmeleri</h3>
+                    </div>
+                    <button id="sidebar-news-toggle" type="button" class="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white hover:border-brandGold/40 transition">Kapat</button>
                 </div>
-                <a href="#haberler" class="mt-6 inline-flex items-center justify-center w-full rounded-2xl bg-brandGold px-4 py-3 text-xs font-bold uppercase tracking-widest text-brandDark hover:bg-white transition">Tüm Haberleri Gör</a>
+                <div id="sidebar-news-body" class="mt-3">
+                    <p id="sidebar-news-intro" class="mt-3 text-[12px] text-neutral-400 leading-relaxed">Sporline'da bugün neler oluyor? Yeni içerik ve duyuruları hemen keşfedin.</p>
+                    <div class="mt-5 border-t border-neutral-900 pt-5">
+                        <h4 class="text-[10px] font-bold uppercase tracking-[0.35em] text-neutral-500">Rastgele Bilgiler</h4>
+                        <ul id="sidebar-news-facts" class="mt-4 space-y-3 text-[12px] text-neutral-400 leading-relaxed"></ul>
+                    </div>
+                    <a href="#haberler" class="mt-6 inline-flex items-center justify-center w-full rounded-2xl bg-brandGold px-4 py-3 text-xs font-bold uppercase tracking-widest text-brandDark hover:bg-white transition">Tüm Haberleri Gör</a>
+                </div>
             </div>
         </aside>
 
@@ -590,6 +597,7 @@
             if (text.startsWith('/uploads/')) return `${mediaBase}${text}`;
             if (text.startsWith('uploads/')) return `${mediaBase}/${text}`;
             if (text.startsWith('/assets/')) return `${window.location.origin}${text}`;
+            if (text.startsWith('assets/')) return `${window.location.origin}/${text}`;
             return `${mediaBase}/${text}`;
         };
 
@@ -744,6 +752,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const sidebarNewsToggle = document.getElementById('sidebar-news-toggle');
+            const sidebarNewsBody = document.getElementById('sidebar-news-body');
+            if (sidebarNewsToggle && sidebarNewsBody) {
+                sidebarNewsToggle.addEventListener('click', () => {
+                    const isHidden = sidebarNewsBody.classList.toggle('hidden');
+                    sidebarNewsToggle.textContent = isHidden ? 'Aç' : 'Kapat';
+                });
+            }
+
             const preloader = document.getElementById('preloader');
             const preloadBar = document.getElementById('preload-bar');
             const preloadLogo = document.getElementById('preload-logo');

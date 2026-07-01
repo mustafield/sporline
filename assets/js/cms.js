@@ -57,6 +57,7 @@
         if (text.startsWith('/uploads/')) return `${mediaBase}${text}`;
         if (text.startsWith('uploads/')) return `${mediaBase}/${text}`;
         if (text.startsWith('/assets/')) return `${window.location.origin}${text}`;
+        if (text.startsWith('assets/')) return `${window.location.origin}/${text}`;
         if (/^[^\s\/]+\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mov|m4v)$/i.test(text)) {
             return `${mediaBase}/uploads/${text}`;
         }
