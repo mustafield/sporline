@@ -5,7 +5,7 @@ const cardSchema = new mongoose.Schema({ title: { type: String, trim: true }, de
 const paketSchema = new mongoose.Schema({ isim: { type: String, trim: true }, fiyat: Number, badge: { type: String, trim: true }, features: [{ type: String, trim: true }], order: { type: Number, default: 0 } }, { _id: false });
 const athleteSchema = new mongoose.Schema({ name: { type: String, trim: true }, branch: { type: String, trim: true }, detail: { type: String, trim: true }, badge: { type: String, trim: true }, image: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
 const productSchema = new mongoose.Schema({ title: { type: String, trim: true }, badge: { type: String, trim: true }, subtitle: { type: String, trim: true }, status: { type: String, trim: true }, image: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
-const sponsorItemSchema = new mongoose.Schema({ name: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
+const sponsorItemSchema = new mongoose.Schema({ name: { type: String, trim: true }, image: { type: String, trim: true }, url: { type: String, trim: true }, order: { type: Number, default: 0 } }, { _id: false });
 
 const ContentSchema = new mongoose.Schema({
     hero: {

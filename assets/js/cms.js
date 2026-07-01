@@ -47,6 +47,14 @@
         if (el) el.setAttribute(attr, value);
     };
 
+    const getAbsoluteUrl = (value) => {
+        if (!value) return '';
+        const text = String(value).trim();
+        if (/^(https?:)?\/\//i.test(text) || text.startsWith('data:')) return text;
+        if (text.startsWith('/')) return `${window.location.origin}${text}`;
+        return `${window.location.origin}/${text}`;
+    };
+
     const normalizeYouTubeId = (value) => {
         if (!value) return '';
         if (/^[a-zA-Z0-9_-]{11}$/.test(value)) return value;
@@ -82,9 +90,8 @@
         setTextById('hero-cta-primary', hero.ctaPrimary);
         setTextById('hero-cta-secondary', hero.ctaSecondary);
 
-        const videoId = normalizeYouTubeId(hero.videoUrl);
-        if (videoId && typeof window.updateHeroVideo === 'function') {
-            window.updateHeroVideo(videoId);
+        if (typeof window.updateHeroVideo === 'function') {
+            window.updateHeroVideo(hero.videoUrl);
         }
     };
 
@@ -165,6 +172,37 @@
         });
     };
 
+    const updateSponsors = (section) => {
+        if (!section) return;
+        setTextById('sponsor-section-label', section.sectionLabel);
+        setTextById('sponsor-section-title', section.title);
+        setTextById('sponsor-cta-title', section.ctaTitle);
+        setTextById('sponsor-cta-text', section.ctaText);
+
+        const grid = byId('sponsor-cards');
+        if (grid && Array.isArray(section.items)) {
+            const sponsors = section.items
+                .filter((item) => item && (item.name || item.image))
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            grid.innerHTML = sponsors.map((sponsor) => {
+                const cardInner = sponsor.image
+                    ? `<img src="${getAbsoluteUrl(sponsor.image)}" alt="${sponsor.name || 'Sponsor'}" class="max-h-14 w-auto object-contain mx-auto">`
+                    : `<span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">${sponsor.name || ''}</span>`;
+
+                const cardContent = `
+                    <div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg">
+                        ${cardInner}
+                        ${!sponsor.image && sponsor.url ? '<span class="text-[10px] uppercase tracking-[0.25em] text-neutral-500">Resmi Site</span>' : ''}
+                    </div>`;
+
+                return sponsor.url
+                    ? `<a href="${sponsor.url}" target="_blank" rel="noopener noreferrer" class="block">${cardContent}</a>`
+                    : `<div>${cardContent}</div>`;
+            }).join('');
+        }
+    };
+
     // ---------- İletişim ----------
     const updateContactInfo = (contact) => {
         if (!contact) return;
@@ -236,6 +274,7 @@
         updatePrograms(data.programlar);
         updateAthletes(data.milliSporcular);
         updateProducts(data.urunler);
+        updateSponsors(data.sponsorlar);
         updateContactInfo(data.iletisim);
         updateFooter(data.footer);
         updateSocial(data.sosyalMedya);

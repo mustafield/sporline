@@ -303,7 +303,7 @@
         renderDynamicCards('prices', itemsOf('paketler'), ['isim', 'fiyat', 'badge', 'features']);
         renderDynamicCards('athletes', itemsOf('milliSporcular'), ['name', 'branch', 'detail', 'badge', 'image']);
         renderDynamicCards('products', itemsOf('urunler'), ['title', 'badge', 'subtitle', 'status', 'image']);
-        renderDynamicCards('sponsors', itemsOf('sponsorlar'), ['name']);
+        renderDynamicCards('sponsors', itemsOf('sponsorlar'), ['name', 'image', 'url']);
     };
 
     const renderDynamicCards = (type, array, fields) => {
@@ -328,6 +328,13 @@
                         <div>
                             <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Görsel / Logo URL</label>
                             <input type="text" data-field="${f}" value="${val}" class="form-input">
+                        </div>
+                    `;
+                } else if (f === 'url') {
+                    innerHTML += `
+                        <div>
+                            <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Link URL</label>
+                            <input type="url" data-field="${f}" value="${val}" class="form-input" placeholder="https://...">
                         </div>
                     `;
                 } else if (f === 'features') {
@@ -567,7 +574,7 @@ const handleFileUpload = async (fileInputId, textInputId) => {
         $('#save-prices')?.addEventListener('click', () => saveSection('paketler', getDynamicCardData('prices', ['isim', 'fiyat', 'badge', 'features'])));
         $('#save-athletes')?.addEventListener('click', () => saveSection('milliSporcular', getDynamicCardData('athletes', ['name', 'branch', 'detail', 'badge', 'image'])));
         $('#save-products')?.addEventListener('click', () => saveSection('urunler', getDynamicCardData('products', ['title', 'badge', 'subtitle', 'status', 'image'])));
-        $('#save-sponsors')?.addEventListener('click', () => saveSection('sponsorlar', getDynamicCardData('sponsors', ['name'])));
+        $('#save-sponsors')?.addEventListener('click', () => saveSection('sponsorlar', getDynamicCardData('sponsors', ['name', 'image', 'url'])));
         
         $('#save-blog')?.addEventListener('click', saveBlog);
         $('#cancel-blog-edit')?.addEventListener('click', resetBlogForm);

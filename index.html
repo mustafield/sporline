@@ -192,7 +192,10 @@
             
             <div class="video-background absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden opacity-65">
                 <div class="absolute inset-0 bg-gradient-to-b from-brandDark/50 via-transparent to-brandDark z-10 w-full h-full"></div>
-                <div class="video-foreground">
+                <div class="video-foreground" id="hero-video-shell">
+                    <video id="hero-local-video" class="absolute inset-0 w-full h-full object-cover hidden" autoplay muted loop playsinline preload="auto">
+                        <source id="hero-local-video-source" src="assets/videos/hero-bg.mp4" type="video/mp4">
+                    </video>
                     <div id="yt-player"></div>
                 </div>
             </div>
@@ -417,31 +420,23 @@
         <section id="sponsorlar" class="py-20 relative overflow-hidden bg-[#050505]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="text-center max-w-2xl mx-auto mb-12 space-y-2 gsap-reveal">
-                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-brandGold">GÜCÜMÜZE GÜÇ KATANLAR</span>
-                    <h3 class="text-xl font-bold font-heading uppercase text-white">KURUMSAL SPONSORLARIMIZ</h3>
+                    <span id="sponsor-section-label" class="text-xs font-bold uppercase tracking-[0.2em] text-brandGold">GÜCÜMÜZE GÜÇ KATANLAR</span>
+                    <h3 id="sponsor-section-title" class="text-xl font-bold font-heading uppercase text-white">KURUMSAL SPONSORLARIMIZ</h3>
                 </div>
 
-                <div class="w-full overflow-hidden relative py-6 border-t border-b border-neutral-900/40 select-none gsap-reveal">
-                    <div class="animate-marquee gap-16 items-center whitespace-nowrap">
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">VORTEX LABS</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">NEXORA DIGITAL</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">IRON ARMOR</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">TITAN BUILD</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">KAYSERİ TEKNOPARK</span>
-                        
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">VORTEX LABS</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">NEXORA DIGITAL</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">IRON ARMOR</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">TITAN BUILD</span>
-                        <span class="text-lg font-black font-heading text-neutral-700 tracking-widest uppercase hover:text-brandGold transition px-4">KAYSERİ TEKNOPARK</span>
-                    </div>
+                <div id="sponsor-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 py-6 border-t border-b border-neutral-900/40 gsap-reveal">
+                    <a href="#" class="block"><div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg"><span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">VORTEX LABS</span></div></a>
+                    <a href="#" class="block"><div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg"><span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">NEXORA DIGITAL</span></div></a>
+                    <a href="#" class="block"><div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg"><span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">IRON ARMOR</span></div></a>
+                    <a href="#" class="block"><div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg"><span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">TITAN BUILD</span></div></a>
+                    <a href="#" class="block"><div class="min-h-[110px] flex flex-col items-center justify-center gap-4 p-5 rounded-2xl bg-brandCard border border-neutral-900 hover:border-brandGold/30 transition duration-300 shadow-lg"><span class="text-sm sm:text-base font-black font-heading uppercase tracking-widest text-neutral-200 text-center">KAYSERİ TEKNOPARK</span></div></a>
                 </div>
 
                 <div class="mt-16 max-w-4xl mx-auto bg-brandCard border border-neutral-900 p-8 sm:p-12 rounded-3xl relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl gsap-reveal">
                     <div class="absolute top-0 right-0 w-72 h-72 bg-brandGold/5 rounded-full blur-[80px] pointer-events-none"></div>
                     <div class="space-y-3 text-center md:text-left">
-                        <h4 class="text-xl font-bold font-heading text-white uppercase">Sponsorumuz Olun, Zirvede Yer Alın</h4>
-                        <p class="text-xs text-neutral-400 font-light max-w-lg leading-relaxed">
+                        <h4 id="sponsor-cta-title" class="text-xl font-bold font-heading text-white uppercase">Sponsorumuz Olun, Zirvede Yer Alın</h4>
+                        <p id="sponsor-cta-text" class="text-xs text-neutral-400 font-light max-w-lg leading-relaxed">
                             Milli sporcularımıza destek olmak og markanızı Kayseri'nin en elit spor topluluğu ile buluşturmak için sponsorluk ağımıza katılın.
                         </p>
                     </div>
@@ -571,18 +566,106 @@
 
     <script>
         let player;
+        let heroVideoMode = 'youtube';
+        let heroVideoPlayerReady = false;
 
-        window.updateHeroVideo = function(videoId) {
-            if (!videoId) return;
+        const getYouTubeId = (value) => {
+            if (!value) return '';
+            const text = String(value).trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(text)) return text;
+            const match = text.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+            return match ? match[1] : '';
+        };
+
+        const isVideoFile = (value) => {
+            const text = String(value || '').toLowerCase();
+            return /\.(mp4|webm|ogg)(\?.*)?$/.test(text) || text.startsWith('/uploads/') || text.startsWith('uploads/') || text.startsWith('assets/videos/');
+        };
+
+        const getAbsoluteUrl = (value) => {
+            const text = String(value || '').trim();
+            if (!text) return '';
+            if (/^(https?:)?\/\//i.test(text) || text.startsWith('data:')) return text;
+            if (text.startsWith('/')) return `${window.location.origin}${text}`;
+            return `${window.location.origin}/${text}`;
+        };
+
+        const getVideoMimeType = (value) => {
+            const text = String(value || '').toLowerCase();
+            if (text.includes('.webm')) return 'video/webm';
+            if (text.includes('.ogg')) return 'video/ogg';
+            return 'video/mp4';
+        };
+
+        const showLocalHeroVideo = (url) => {
+            const localVideo = document.getElementById('hero-local-video');
+            const localSource = document.getElementById('hero-local-video-source');
+            const ytPlayer = document.getElementById('yt-player');
+            if (player && typeof player.stopVideo === 'function') {
+                player.stopVideo();
+            }
+            if (player && typeof player.destroy === 'function') {
+                player.destroy();
+                player = null;
+            }
+            if (ytPlayer) ytPlayer.style.display = 'none';
+            if (localVideo) {
+                localVideo.classList.remove('hidden');
+                localVideo.style.display = 'block';
+            }
+            if (localSource && url) {
+                localSource.src = getAbsoluteUrl(url);
+                localSource.type = getVideoMimeType(url);
+            }
+            if (localVideo) {
+                localVideo.load();
+                const playPromise = localVideo.play();
+                if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+            }
+        };
+
+        const showYouTubeHeroVideo = (videoId) => {
+            const localVideo = document.getElementById('hero-local-video');
+            const ytPlayer = document.getElementById('yt-player');
+            if (localVideo) {
+                localVideo.pause();
+                localVideo.classList.add('hidden');
+                localVideo.style.display = 'none';
+            }
+            if (ytPlayer) ytPlayer.style.display = 'block';
+
             if (player && typeof player.loadVideoById === 'function') {
                 player.loadVideoById(videoId);
                 return;
             }
+
             window.__SPORLINE_HERO_VIDEO_ID__ = videoId;
+            if (heroVideoPlayerReady && window.YT && typeof window.YT.Player === 'function') {
+                onYouTubeIframeAPIReady();
+            }
+        };
+
+        window.updateHeroVideo = function(videoValue) {
+            if (!videoValue) return;
+            const youtubeId = getYouTubeId(videoValue);
+            if (youtubeId) {
+                heroVideoMode = 'youtube';
+                showYouTubeHeroVideo(youtubeId);
+                return;
+            }
+
+            heroVideoMode = 'local';
+            showLocalHeroVideo(videoValue);
         };
 
         function onYouTubeIframeAPIReady() {
+            heroVideoPlayerReady = true;
             const initialVideoId = window.__SPORLINE_HERO_VIDEO_ID__ || 'HnoPHqrdXQ8';
+            if (heroVideoMode !== 'youtube' && !window.__SPORLINE_HERO_VIDEO_ID__) {
+                const localVideo = document.getElementById('hero-local-video');
+                if (localVideo) localVideo.classList.remove('hidden');
+                return;
+            }
             player = new YT.Player('yt-player', {
                 videoId: initialVideoId,
                 playerVars: {
@@ -616,6 +699,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const localVideo = document.getElementById('hero-local-video');
+            if (localVideo) localVideo.classList.remove('hidden');
             const preloader = document.getElementById('preloader');
             const preloadBar = document.getElementById('preload-bar');
             const preloadLogo = document.getElementById('preload-logo');
