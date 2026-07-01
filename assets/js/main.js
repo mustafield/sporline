@@ -15,7 +15,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Görsel/Video yollarını düzeltici fonksiyon
             const getValidUrl = (url) => {
                 if (!url) return '';
-                return url.startsWith('http') ? url : `https://sporline.onrender.com/uploads/${url}`;
+                if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+                if (url.startsWith('assets/')) return url;
+                if (url.startsWith('/assets/')) return url;
+                if (url.startsWith('/uploads/')) return `${window.location.origin}${url}`;
+                if (url.startsWith('uploads/')) return `${window.location.origin}/${url}`;
+                return `${window.location.origin}/uploads/${url}`;
             };
 
             const updateCmsElement = (key, value) => {

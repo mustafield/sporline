@@ -391,13 +391,16 @@ const handleFileUpload = async (fileInputId, textInputId) => {
             
             const data = await res.json();
             
-            // Bytescale'den dönen URL'yi alıp kutuya yazdırıyoruz
-            if (res.ok && data.url) {
+            const uploadedUrl = data?.url || data?.fileUrl || data?.data?.url || data?.data?.fileUrl;
+
+            // Dönen URL'yi alıp kutuya yazdırıyoruz
+            if (res.ok && uploadedUrl) {
                 if($(textInputId)) {
-                    $(textInputId).value = data.url;
+                    $(textInputId).value = uploadedUrl;
                     // Input'un değiştiğini sisteme bildiriyoruz
                     $(textInputId).dispatchEvent(new Event('input'));
                 }
+                fileInput.value = '';
                 toast('Dosya başarıyla yüklendi!');
             } else {
                 toast(data.message || 'Yükleme başarısız', 'error');

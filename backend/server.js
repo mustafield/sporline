@@ -23,8 +23,20 @@ app.use(helmet({
 app.use(compression());
 
 // --- GÜNCELLENMİŞ CORS AYARI ---
+const allowedOrigins = new Set([
+    'https://www.sporlinefitness.com.tr',
+    'https://sporline.onrender.com',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000'
+]);
+
 app.use(cors({
-    origin: 'https://www.sporlinefitness.com.tr',
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
