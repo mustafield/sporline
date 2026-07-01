@@ -1,8 +1,14 @@
 // Tarayıcıda hostname kontrolü yaparak dinamik API URL'si belirleme
+const isAdminPage = /admin\.html$/i.test(window.location.pathname);
+const localApiBase = 'http://localhost:5000';
+const productionApiBase = 'https://sporline.onrender.com';
+
 const API_BASE = window.__SPORLINE_API__ || (
-    window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-      ? 'https://sporline.onrender.com' // Canlı sunucu (Vercel/Domain üzerindeyken)
-      : 'http://localhost:5000'         // Lokal sunucu (Kendi bilgisayarında test ederken)
+        isAdminPage
+            ? productionApiBase
+            : (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+                    ? productionApiBase
+                    : localApiBase)
 );
 
 window.SportlineConfig = {
