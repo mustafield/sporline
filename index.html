@@ -594,6 +594,9 @@
             const text = String(value || '').toLowerCase();
             if (text.includes('.webm')) return 'video/webm';
             if (text.includes('.ogg')) return 'video/ogg';
+            if (text.includes('.mov')) return 'video/quicktime';
+            if (text.includes('.m4v')) return 'video/x-m4v';
+            if (text.includes('.mp4')) return 'video/mp4';
             return 'video/mp4';
         };
 

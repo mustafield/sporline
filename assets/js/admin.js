@@ -306,57 +306,87 @@
         renderDynamicCards('sponsors', itemsOf('sponsorlar'), ['name', 'image', 'url']);
     };
 
+    const bindDynamicCardUploads = (card) => {
+        card.querySelectorAll('[data-upload-button]').forEach((button) => {
+            const fileInputId = button.dataset.uploadButton;
+            const fileInput = card.querySelector(`#${fileInputId}`);
+            const textInput = card.querySelector(`[data-upload-target="${fileInputId}"]`);
+            if (!fileInput || !textInput) return;
+
+            button.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => handleFileUpload(`#${fileInputId}`, `#${textInput.id}`));
+        });
+    };
+
+    const buildDynamicCard = (type, item, fields, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-brandDark border border-neutral-900 rounded-xl p-5 relative group hover:border-brandGold/20 transition space-y-3';
+        
+        let innerHTML = `
+            <button type="button" onclick="this.closest('.group').remove()" class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 flex items-center justify-center transition opacity-0 group-hover:opacity-100 z-10">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+        `;
+
+        fields.forEach(f => {
+            const val = item[f] || '';
+            if (f === 'image' || f === 'logo') {
+                const inputId = `${type}-${index}-${f}`;
+                const fileInputId = `${inputId}-file`;
+                innerHTML += `
+                    <div>
+                        <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Görsel / Logo URL veya Dosya Yükle</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="${inputId}" data-field="${f}" data-upload-target="${fileInputId}" value="${val}" class="form-input" placeholder="https://... veya /uploads/...">
+                            <input type="file" id="${fileInputId}" class="hidden" accept="image/*">
+                            <button type="button" data-upload-button="${fileInputId}" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Yükle</button>
+                        </div>
+                    </div>
+                `;
+            } else if (f === 'url') {
+                innerHTML += `
+                    <div>
+                        <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Link URL</label>
+                        <input type="url" data-field="${f}" value="${val}" class="form-input" placeholder="https://...">
+                    </div>
+                `;
+            } else if (f === 'features') {
+                innerHTML += `
+                    <div>
+                        <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Özellikler (Satır Satır)</label>
+                        <textarea data-field="${f}" class="form-input h-20 resize-none">${Array.isArray(val) ? val.join('\n') : val}</textarea>
+                    </div>
+                `;
+            } else {
+                innerHTML += `
+                    <div>
+                        <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">${f}</label>
+                        <input type="text" data-field="${f}" value="${val}" class="form-input">
+                    </div>
+                `;
+            }
+        });
+
+        card.innerHTML = innerHTML;
+        bindDynamicCardUploads(card);
+        return card;
+    };
+
     const renderDynamicCards = (type, array, fields) => {
         const container = $(`#${type}-container`);
         if (!container) return;
         container.innerHTML = '';
 
         array.forEach((item, index) => {
-            const card = document.createElement('div');
-            card.className = 'bg-brandDark border border-neutral-900 rounded-xl p-5 relative group hover:border-brandGold/20 transition space-y-3';
-            
-            let innerHTML = `
-                <button type="button" onclick="this.closest('.group').remove()" class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 flex items-center justify-center transition opacity-0 group-hover:opacity-100 z-10">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-            `;
-
-            fields.forEach(f => {
-                const val = item[f] || '';
-                if (f === 'image' || f === 'logo') {
-                    innerHTML += `
-                        <div>
-                            <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Görsel / Logo URL</label>
-                            <input type="text" data-field="${f}" value="${val}" class="form-input">
-                        </div>
-                    `;
-                } else if (f === 'url') {
-                    innerHTML += `
-                        <div>
-                            <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Link URL</label>
-                            <input type="url" data-field="${f}" value="${val}" class="form-input" placeholder="https://...">
-                        </div>
-                    `;
-                } else if (f === 'features') {
-                    innerHTML += `
-                        <div>
-                            <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Özellikler (Satır Satır)</label>
-                            <textarea data-field="${f}" class="form-input h-20 resize-none">${Array.isArray(val) ? val.join('\n') : val}</textarea>
-                        </div>
-                    `;
-                } else {
-                    innerHTML += `
-                        <div>
-                            <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">${f}</label>
-                            <input type="text" data-field="${f}" value="${val}" class="form-input">
-                        </div>
-                    `;
-                }
-            });
-
-            card.innerHTML = innerHTML;
-            container.appendChild(card);
+            container.appendChild(buildDynamicCard(type, item, fields, index));
         });
+    };
+
+    const addDynamicCard = (type, fields, defaults = {}) => {
+        const container = $(`#${type}-container`);
+        if (!container) return;
+        const index = container.querySelectorAll('.group').length;
+        container.appendChild(buildDynamicCard(type, defaults, fields, index));
     };
 
     const getDynamicCardData = (type, fields) => {
@@ -575,6 +605,7 @@ const handleFileUpload = async (fileInputId, textInputId) => {
         $('#save-athletes')?.addEventListener('click', () => saveSection('milliSporcular', getDynamicCardData('athletes', ['name', 'branch', 'detail', 'badge', 'image'])));
         $('#save-products')?.addEventListener('click', () => saveSection('urunler', getDynamicCardData('products', ['title', 'badge', 'subtitle', 'status', 'image'])));
         $('#save-sponsors')?.addEventListener('click', () => saveSection('sponsorlar', getDynamicCardData('sponsors', ['name', 'image', 'url'])));
+        $('#add-sponsor')?.addEventListener('click', () => addDynamicCard('sponsors', ['name', 'image', 'url'], { name: '', image: '', url: '' }));
         
         $('#save-blog')?.addEventListener('click', saveBlog);
         $('#cancel-blog-edit')?.addEventListener('click', resetBlogForm);
