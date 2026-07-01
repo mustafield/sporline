@@ -198,12 +198,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Tagline</label><input id="hero-tagline" class="form-input"></div>
                             <div>
-                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Video URL</label>
-                                <div class="flex gap-2">
-                                    <input id="hero-video" class="form-input" placeholder="Video Linki veya Yükle">
+                                <label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Hero Video</label>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input id="hero-video" type="url" class="form-input" placeholder="YouTube, Vimeo, Instagram, MP4/WebM veya doğrudan video URL'si">
                                     <input type="file" id="hero-video-file" class="hidden" accept="video/*">
-                                    <button type="button" onclick="document.getElementById('hero-video-file').click()" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Video Yükle</button>
+                                    <button type="button" onclick="document.getElementById('hero-video-file').click()" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Cihazdan Seç</button>
                                 </div>
+                                <p class="mt-2 text-[11px] text-neutral-500">YouTube, Vimeo, Instagram reel/post linkleri, doğrudan MP4/WebM linkleri veya cihazdan yüklenen videoları ekleyebilirsiniz.</p>
                             </div>
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık Satır 1</label><input id="hero-title1" class="form-input"></div>
                             <div><label class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider block mb-1.5">Başlık Satır 2</label><input id="hero-title2" class="form-input"></div>
