@@ -52,6 +52,9 @@
         const text = String(value).trim();
         if (/^(https?:)?\/\//i.test(text) || text.startsWith('data:')) return text;
         if (text.startsWith('/')) return `${window.location.origin}${text}`;
+        if (/^[^\s\/]+\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg)$/i.test(text)) {
+            return `${window.location.origin}/uploads/${text}`;
+        }
         return `${window.location.origin}/${text}`;
     };
 
@@ -90,8 +93,11 @@
         setTextById('hero-cta-primary', hero.ctaPrimary);
         setTextById('hero-cta-secondary', hero.ctaSecondary);
 
+        const videoValue = String(hero.videoUrl || '').trim();
+        const usableVideo = videoValue && !/^assets\/videos\/hero-bg\.(mp4|webm)$/i.test(videoValue) ? videoValue : '';
+
         if (typeof window.updateHeroVideo === 'function') {
-            window.updateHeroVideo(hero.videoUrl);
+            window.updateHeroVideo(usableVideo);
         }
     };
 

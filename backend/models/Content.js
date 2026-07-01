@@ -13,8 +13,8 @@ const ContentSchema = new mongoose.Schema({
         titleLine1: { type: String, default: "SIRADANLIĞI", trim: true },
         titleLine2: { type: String, default: "REDDET", trim: true },
         description: { type: String, default: "Modern teknolojiye sahip ekipmanlar, Türkiye'nin en iyi eğitmenleri bir arada.", trim: true },
-        videoUrl: { type: String, default: "assets/videos/hero-bg.mp4", trim: true },
-        videoWebm: { type: String, default: "assets/videos/hero-bg.webm", trim: true },
+        videoUrl: { type: String, default: "", trim: true },
+        videoWebm: { type: String, default: "", trim: true },
         ctaPrimary: { type: String, default: "VIP Üyelik Başvurusu", trim: true },
         ctaSecondary: { type: String, default: "Alanları Keşfet", trim: true }
     },

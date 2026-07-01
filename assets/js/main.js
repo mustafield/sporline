@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (url.startsWith('/assets/')) return url;
                 if (url.startsWith('/uploads/')) return `${window.location.origin}${url}`;
                 if (url.startsWith('uploads/')) return `${window.location.origin}/${url}`;
+                if (/^[^\s\/]+\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg)$/i.test(url)) return `${window.location.origin}/uploads/${url}`;
                 return `${window.location.origin}/uploads/${url}`;
             };
 
