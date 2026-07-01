@@ -235,7 +235,7 @@
                     <a href="#iletisim" class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 rounded-xl bg-brandGold text-brandDark font-bold text-xs uppercase tracking-widest hover:bg-white transition">Ücretsiz Keşif Talebi</a>
                 </div>
                 <div class="rounded-[32px] overflow-hidden border border-neutral-900 shadow-2xl shadow-black/30">
-                    <img id="hakkimizda-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Sporline Fitness" class="w-full h-full object-cover min-h-[420px]">
+                    <img id="hakkimizda-img" data-cms-key="about_image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Sporline Fitness" class="w-full h-full object-cover min-h-[420px]">
                 </div>
             </div>
         </section>
@@ -251,11 +251,14 @@
                     <ul id="haberler-facts" class="grid gap-3 text-[12px] text-neutral-400 leading-relaxed"></ul>
                 </div>
                 <div id="haberler-grid" class="grid gap-6 md:grid-cols-3"></div>
+                <button id="sidebar-news-mobile-open" type="button" class="xl:hidden mt-8 inline-flex items-center justify-center w-full rounded-2xl border border-neutral-800 bg-neutral-950 px-5 py-4 text-xs font-bold uppercase tracking-widest text-neutral-300 hover:text-white hover:border-brandGold/40 transition">
+                    Haber Köşesini Aç
+                </button>
             </div>
         </section>
 
-        <aside id="sidebar-news" class="hidden xl:block fixed top-28 right-6 w-96 max-w-xs z-40">
-            <div class="rounded-3xl border border-neutral-900 bg-brandCard/95 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
+        <aside id="sidebar-news" class="block w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-0 xl:block xl:fixed xl:top-28 xl:right-6 xl:w-96 xl:max-w-xs z-40 mt-8 xl:mt-0">
+            <div class="sidebar-news-shell rounded-3xl border border-neutral-900 bg-brandCard/95 p-5 sm:p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <span id="sidebar-news-label" class="text-[10px] font-bold uppercase tracking-[0.35em] text-brandGold">Haber Köşesi</span>

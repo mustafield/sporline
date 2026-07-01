@@ -408,11 +408,22 @@
         });
         return result;
     };
+    const getAboutPayload = () => ({
+        sectionLabel: $('#about-label').value,
+        title: $('#about-title').value,
+        subtitle: $('#about-subtitle').value,
+        text1: $('#about-text1').value,
+        text2: $('#about-text2').value,
+        imageUrl: $('#about-image').value
+    });
+
+    const saveAbout = () => saveSection('hakkimizda', getAboutPayload());
+
 const handleFileUpload = async (fileInputId, textInputId) => {
         const fileInput = $(fileInputId);
         if (!fileInput || !fileInput.files[0]) {
             toast('Lütfen önce bir dosya seçin.', 'error');
-            return;
+            return false;
         }
         
         const formData = new FormData();
@@ -441,12 +452,15 @@ const handleFileUpload = async (fileInputId, textInputId) => {
                 }
                 fileInput.value = '';
                 toast('Dosya başarıyla yüklendi!');
+                return true;
             } else {
                 toast(data.message || 'Yükleme başarısız', 'error');
+                return false;
             }
         } catch (err) {
             console.error('Yükleme hatası:', err);
             toast('Sunucu hatası oluştu', 'error');
+            return false;
         }
     };
     const saveSection = async (section, data) => {
@@ -574,12 +588,16 @@ const handleFileUpload = async (fileInputId, textInputId) => {
 
         // Dosya yükleme dinleyicileri (HTML elementlerine bağlandı)
         $('#hero-video-file')?.addEventListener('change', () => handleFileUpload('#hero-video-file', '#hero-video'));
-        $('#about-image-file')?.addEventListener('change', () => handleFileUpload('#about-image-file', '#about-image'));
+        $('#about-image-file')?.addEventListener('change', async () => {
+            const uploaded = await handleFileUpload('#about-image-file', '#about-image');
+            if (uploaded) await saveAbout();
+        });
         $('#blog-image-file')?.addEventListener('change', () => handleFileUpload('#blog-image-file', '#blog-image'));
 
         // Bölüm Kayıt Tetikleyicileri
         $('#save-hero')?.addEventListener('click', () => saveSection('hero', { tagline: $('#hero-tagline').value, videoUrl: $('#hero-video').value, titleLine1: $('#hero-title1').value, titleLine2: $('#hero-title2').value, description: $('#hero-desc').value, ctaPrimary: $('#hero-cta1').value, ctaSecondary: $('#hero-cta2').value }));
-        $('#save-about')?.addEventListener('click', () => saveSection('hakkimizda', { sectionLabel: $('#about-label').value, title: $('#about-title').value, subtitle: $('#about-subtitle').value, text1: $('#about-text1').value, text2: $('#about-text2').value, imageUrl: $('#about-image').value }));
+        $('#about-image')?.addEventListener('change', () => saveAbout());
+        $('#save-about')?.addEventListener('click', saveAbout);
         $('#save-news')?.addEventListener('click', () => saveSection('haberler', { randomFacts: $('#news-text').value.split('\n').map(x => x.trim()).filter(Boolean) }));
         $('#save-contact')?.addEventListener('click', () => saveSection('iletisim', { telefon: $('#contact-phone').value, email: $('#contact-email').value, adres: $('#contact-address').value, mapEmbedUrl: $('#contact-mapsrc').value, saatler: $('#contact-hours').value }));
         $('#save-social')?.addEventListener('click', () => {

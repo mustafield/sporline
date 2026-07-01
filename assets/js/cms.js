@@ -153,6 +153,75 @@
         renderFacts('sidebar-news-facts', news.randomFacts);
     };
 
+    const initNewsSidebarToggle = () => {
+        const sidebar = byId('sidebar-news');
+        const body = byId('sidebar-news-body');
+        const toggle = byId('sidebar-news-toggle');
+        const mobileOpen = byId('sidebar-news-mobile-open');
+        if (!sidebar || !body || !toggle) return;
+
+        const storageKey = 'sporline-sidebar-news-collapsed';
+        const mobileQuery = window.matchMedia('(max-width: 1279px)');
+
+        const applyState = (collapsed) => {
+            body.classList.toggle('hidden', collapsed);
+            toggle.textContent = collapsed ? 'Aç' : 'Kapat';
+            toggle.setAttribute('aria-expanded', String(!collapsed));
+            sidebar.dataset.collapsed = collapsed ? 'true' : 'false';
+        };
+
+        const openMobileSidebar = () => {
+            sidebar.classList.add('is-open');
+            body.classList.remove('hidden');
+            toggle.textContent = 'Kapat';
+            toggle.setAttribute('aria-expanded', 'true');
+            sidebar.dataset.collapsed = 'false';
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeMobileSidebar = () => {
+            sidebar.classList.remove('is-open');
+            document.body.style.overflow = '';
+        };
+
+        const syncMode = () => {
+            if (mobileQuery.matches) {
+                const collapsed = localStorage.getItem(storageKey) === 'true';
+                body.classList.remove('hidden');
+                sidebar.classList.remove('is-open');
+                toggle.textContent = 'Kapat';
+                toggle.setAttribute('aria-expanded', 'true');
+                sidebar.dataset.collapsed = String(collapsed);
+                return;
+            }
+
+            closeMobileSidebar();
+            const initialCollapsed = localStorage.getItem(storageKey) === 'true';
+            applyState(initialCollapsed);
+        };
+
+        syncMode();
+
+        toggle.addEventListener('click', () => {
+            if (mobileQuery.matches) {
+                if (sidebar.classList.contains('is-open')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+                return;
+            }
+
+            const nextState = !body.classList.contains('hidden');
+            localStorage.setItem(storageKey, String(nextState));
+            applyState(nextState);
+        });
+
+        mobileOpen?.addEventListener('click', openMobileSidebar);
+
+        window.addEventListener('resize', syncMode);
+    };
+
     // ---------- Milli Sporcular ----------
     const updateAthletes = (section) => {
         if (!section || !Array.isArray(section.items)) return;
@@ -386,6 +455,7 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        initNewsSidebarToggle();
         fetchLiveContent();
         listenLiveStreamUpdates();
         setInterval(fetchLiveContent, 30000);

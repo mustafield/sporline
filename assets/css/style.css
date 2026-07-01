@@ -210,3 +210,38 @@ section {
     content-visibility: auto;
     contain-intrinsic-size: auto 500px;
 }
+
+@media (max-width: 1279px) {
+    #sidebar-news {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 1rem;
+        z-index: 60;
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(100%);
+        transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    #sidebar-news.is-open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    #sidebar-news .sidebar-news-shell {
+        height: calc(100vh - 2rem);
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    #sidebar-news-body {
+        flex: 1;
+    }
+}
