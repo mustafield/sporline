@@ -586,8 +586,11 @@
             const text = String(value || '').trim();
             if (!text) return '';
             if (/^(https?:)?\/\//i.test(text) || text.startsWith('data:')) return text;
-            if (text.startsWith('/')) return `${window.location.origin}${text}`;
-            return `${window.location.origin}/${text}`;
+            const mediaBase = (window.SportlineConfig && window.SportlineConfig.API_BASE) || window.location.origin;
+            if (text.startsWith('/uploads/')) return `${mediaBase}${text}`;
+            if (text.startsWith('uploads/')) return `${mediaBase}/${text}`;
+            if (text.startsWith('/assets/')) return `${window.location.origin}${text}`;
+            return `${mediaBase}/${text}`;
         };
 
         const getVideoMimeType = (value) => {

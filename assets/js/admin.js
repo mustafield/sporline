@@ -337,7 +337,7 @@
                     <div>
                         <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Görsel / Logo URL veya Dosya Yükle</label>
                         <div class="flex gap-2">
-                            <input type="text" id="${inputId}" data-field="${f}" data-upload-target="${fileInputId}" value="${val}" class="form-input" placeholder="https://... veya /uploads/...">
+                            <input type="text" id="${inputId}" data-field="${f}" data-upload-target="${fileInputId}" value="${esc(val)}" class="form-input" placeholder="https://... veya /uploads/...">
                             <input type="file" id="${fileInputId}" class="hidden" accept="image/*">
                             <button type="button" data-upload-button="${fileInputId}" class="bg-neutral-800 text-white px-4 rounded-xl text-xs font-semibold hover:bg-neutral-700 whitespace-nowrap">Yükle</button>
                         </div>
@@ -347,21 +347,21 @@
                 innerHTML += `
                     <div>
                         <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Link URL</label>
-                        <input type="url" data-field="${f}" value="${val}" class="form-input" placeholder="https://...">
+                        <input type="url" data-field="${f}" value="${esc(val)}" class="form-input" placeholder="https://...">
                     </div>
                 `;
             } else if (f === 'features') {
                 innerHTML += `
                     <div>
                         <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Özellikler (Satır Satır)</label>
-                        <textarea data-field="${f}" class="form-input h-20 resize-none">${Array.isArray(val) ? val.join('\n') : val}</textarea>
+                        <textarea data-field="${f}" class="form-input h-20 resize-none">${esc(Array.isArray(val) ? val.join('\n') : val)}</textarea>
                     </div>
                 `;
             } else {
                 innerHTML += `
                     <div>
                         <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">${f}</label>
-                        <input type="text" data-field="${f}" value="${val}" class="form-input">
+                        <input type="text" data-field="${f}" value="${esc(val)}" class="form-input">
                     </div>
                 `;
             }

@@ -53,11 +53,14 @@
         if (!value) return '';
         const text = String(value).trim();
         if (/^(https?:)?\/\//i.test(text) || text.startsWith('data:')) return text;
-        if (text.startsWith('/')) return `${window.location.origin}${text}`;
-        if (/^[^\s\/]+\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg)$/i.test(text)) {
-            return `${window.location.origin}/uploads/${text}`;
+        const mediaBase = (config && config.API_BASE) || window.location.origin;
+        if (text.startsWith('/uploads/')) return `${mediaBase}${text}`;
+        if (text.startsWith('uploads/')) return `${mediaBase}/${text}`;
+        if (text.startsWith('/assets/')) return `${window.location.origin}${text}`;
+        if (/^[^\s\/]+\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mov|m4v)$/i.test(text)) {
+            return `${mediaBase}/uploads/${text}`;
         }
-        return `${window.location.origin}/${text}`;
+        return text.startsWith('/') ? `${window.location.origin}${text}` : `${mediaBase}/${text}`;
     };
 
     const normalizeYouTubeId = (value) => {
